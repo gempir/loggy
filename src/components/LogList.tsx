@@ -1,5 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useMemo, useRef } from 'react'
+import { ArrowUp } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FullMessage } from '@/api/model'
 import { extractChannelId, useChannelEmotes } from '@/hooks/useChannelEmotes'
 import { use7tvEmotesEnabled } from '@/hooks/useSettings'
@@ -13,6 +14,7 @@ interface LogListProps {
 
 export function LogList({ messages, channelName, showChannel = false }: LogListProps) {
   const parentRef = useRef<HTMLDivElement>(null)
+  const [showScrollTop, setShowScrollTop] = useState(false)
 
   // Check if 7TV emotes are enabled in settings
   const { enabled: sevenTvEnabled } = use7tvEmotesEnabled()
@@ -30,6 +32,24 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
     overscan: 10,
   })
 
+  // Track scroll position to show/hide scroll to top button
+  useEffect(() => {
+    const element = parentRef.current
+    if (!element) return
+
+    const handleScroll = () => {
+      // Show button if scrolled more than 500px
+      setShowScrollTop(element.scrollTop > 500)
+    }
+
+    element.addEventListener('scroll', handleScroll)
+    return () => element.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const scrollToTop = () => {
+    parentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   if (messages.length === 0) {
     return (
       <div className="text-center py-12 text-text-secondary">
@@ -39,8 +59,8 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
   }
 
   return (
-    <div className="bg-bg-secondary border border-border rounded-md overflow-hidden flex-1 flex flex-col min-h-0">
-      <div ref={parentRef} className="flex-1 overflow-y-auto scrollbar-thin">
+    <div className="bg-bg-secondary border border-border rounded-md overflow-hidden flex-1 flex flex-col min-h-0 relative">
+      <div ref={parentRef} className="flex-1 overflow-y-auto scrollbar-thick">
         <div
           className="relative w-full"
           style={{
@@ -70,6 +90,18 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
           })}
         </div>
       </div>
+
+      {/* Scroll to top button */}
+      {showScrollTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className="absolute top-4 right-4 p-3 bg-accent hover:bg-accent-hover text-white rounded-full shadow-lg transition-all hover:scale-110 z-10 cursor-pointer"
+          title="Scroll to top"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
+      )}
     </div>
   )
 }

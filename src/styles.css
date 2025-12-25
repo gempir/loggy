@@ -66,3 +66,29 @@ code {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-bg-hover);
 }
+
+/* Thicker scrollbar for chat logs */
+.scrollbar-thick {
+  scrollbar-width: auto;
+  scrollbar-color: var(--color-bg-tertiary) transparent;
+}
+
+.scrollbar-thick::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+.scrollbar-thick::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thick::-webkit-scrollbar-thumb {
+  background-color: var(--color-bg-tertiary);
+  border-radius: 7px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.scrollbar-thick::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-bg-hover);
+}
