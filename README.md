@@ -26,7 +26,6 @@ The build outputs to the `dist/` directory and is configured for Cloudflare Page
 The project uses GitHub Actions for CI checks on all PRs and commits to main:
 
 - **Lint & Format Check**: Runs Biome to check code quality
-- **Tests**: Runs the test suite with Vitest
 - **Build**: Verifies production build completes successfully
 
 See `.github/workflows/ci.yml` for the full CI configuration.
