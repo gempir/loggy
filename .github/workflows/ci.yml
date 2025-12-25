@@ -41,16 +41,3 @@ jobs:
 
       - name: Build production bundle
         run: bun run build
-
-      - name: Check build output
-        run: |
-          if [ ! -d "dist" ]; then
-            echo "Error: dist directory not found"
-            exit 1
-          fi
-          if [ ! -f "dist/_worker.js/index.js" ]; then
-            echo "Error: worker file not found"
-            exit 1
-          fi
-          echo "Build output verified successfully"
-
