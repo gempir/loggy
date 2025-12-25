@@ -73,9 +73,9 @@ function UserSearchPage() {
   }
 
   return (
-    <div className="px-2 py-2">
+    <div className="px-2 py-2 flex flex-col h-[calc(100vh-4rem)] min-h-0">
       {/* Header */}
-      <div className="mb-2">
+      <div className="mb-2 shrink-0">
         <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
           <Link to="/" className="hover:text-accent transition-colors">
             Channels
@@ -112,7 +112,7 @@ function UserSearchPage() {
       </div>
 
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="mb-2">
+      <form onSubmit={handleSearch} className="mb-2 shrink-0">
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
@@ -139,25 +139,27 @@ function UserSearchPage() {
         <>
           {/* Result Count */}
           {messages && (
-            <div className="text-text-secondary text-sm mb-2">
+            <div className="text-text-secondary text-sm mb-2 shrink-0">
               {messages.length.toLocaleString()} messages found for "{activeQuery}"
             </div>
           )}
 
           {/* Loading State */}
           {isLoading && (
-            <div className="py-20">
+            <div className="flex-1 flex items-center justify-center">
               <LoadingSpinner size="lg" text="Searching..." />
             </div>
           )}
 
           {/* Error State */}
           {error && (
-            <ErrorDisplay
-              title="Search failed"
-              message={error instanceof Error ? error.message : 'Unknown error'}
-              onRetry={() => refetch()}
-            />
+            <div className="flex-1">
+              <ErrorDisplay
+                title="Search failed"
+                message={error instanceof Error ? error.message : 'Unknown error'}
+                onRetry={() => refetch()}
+              />
+            </div>
           )}
 
           {/* Results */}
@@ -169,9 +171,11 @@ function UserSearchPage() {
 
       {/* Empty State */}
       {!activeQuery && (
-        <div className="text-center py-12 text-text-secondary">
-          <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>Enter a search query to find messages</p>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center text-text-secondary">
+            <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>Enter a search query to find messages</p>
+          </div>
         </div>
       )}
     </div>

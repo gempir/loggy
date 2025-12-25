@@ -95,7 +95,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="min-h-screen bg-bg-primary text-text-primary antialiased">
+      <body className="h-screen overflow-hidden bg-bg-primary text-text-primary antialiased">
         <Header />
         <main>{children}</main>
         {process.env.NODE_ENV === 'development' && (
