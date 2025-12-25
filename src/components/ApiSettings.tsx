@@ -1,13 +1,14 @@
 import { Check, RotateCcw, Settings, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useApiConfig } from '@/hooks/useApiConfig'
-import { use7tvEmotesEnabled, useFontFamily } from '@/hooks/useSettings'
-import { FONT_OPTIONS } from '@/lib/settings'
+import { use7tvEmotesEnabled, useFontFamily, useFontSize } from '@/hooks/useSettings'
+import { FONT_OPTIONS, FONT_SIZE_OPTIONS } from '@/lib/settings'
 
 export function ApiSettings() {
   const { apiBaseUrl, updateApiBaseUrl, resetUrl, isCustomUrl, defaultUrl } = useApiConfig()
   const { enabled: sevenTvEnabled, setEnabled: setSevenTvEnabled } = use7tvEmotesEnabled()
   const { font, setFont } = useFontFamily()
+  const { size: fontSize, setSize: setFontSize } = useFontSize()
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState(apiBaseUrl)
   const [saved, setSaved] = useState(false)
@@ -89,6 +90,28 @@ export function ApiSettings() {
                   className="w-full px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 cursor-pointer"
                 >
                   {FONT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Font Size Selection */}
+              <div>
+                <label
+                  htmlFor="font-size-select"
+                  className="block text-sm text-text-secondary mb-2"
+                >
+                  Font Size
+                </label>
+                <select
+                  id="font-size-select"
+                  value={fontSize}
+                  onChange={(e) => setFontSize(e.target.value as typeof fontSize)}
+                  className="w-full px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 cursor-pointer"
+                >
+                  {FONT_SIZE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>

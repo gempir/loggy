@@ -1,10 +1,13 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import {
   type FontFamily,
+  type FontSize,
   get7tvEmotesEnabled,
   getFontFamily,
+  getFontSize,
   set7tvEmotesEnabled,
   setFontFamily,
+  setFontSize,
 } from '@/lib/settings'
 
 const subscribers = new Set<() => void>()
@@ -34,6 +37,14 @@ function getFontSnapshot(): FontFamily {
 
 function getFontServerSnapshot(): FontFamily {
   return 'helvetica' // Default font on server
+}
+
+function getFontSizeSnapshot(): FontSize {
+  return getFontSize()
+}
+
+function getFontSizeServerSnapshot(): FontSize {
+  return 'base' // Default font size on server
 }
 
 export function use7tvEmotesEnabled() {
@@ -68,5 +79,19 @@ export function useFontFamily() {
   return {
     font,
     setFont,
+  }
+}
+
+export function useFontSize() {
+  const size = useSyncExternalStore(subscribe, getFontSizeSnapshot, getFontSizeServerSnapshot)
+
+  const setSize = useCallback((value: FontSize) => {
+    setFontSize(value)
+    notifySubscribers()
+  }, [])
+
+  return {
+    size,
+    setSize,
   }
 }

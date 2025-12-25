@@ -36,10 +36,10 @@ export function LogMessage({
   const messageParts = parseMessageWithEmotes(message.text || '', emoteMap || new Map())
 
   return (
-    <div className="group flex gap-2 py-1 px-2 hover:bg-bg-tertiary/50 rounded font-mono text-sm leading-relaxed">
+    <div className="group flex gap-2 py-1 px-2 hover:bg-bg-tertiary/50 rounded leading-relaxed">
       {/* Timestamp */}
       <span
-        className="text-text-muted shrink-0 tabular-nums"
+        className="text-text-muted shrink-0 tabular-nums font-mono chat-message-text"
         title={`${formattedDate} ${formattedTime}`}
       >
         {formattedTime}
@@ -50,7 +50,7 @@ export function LogMessage({
         <Link
           to="/channel/$channel"
           params={{ channel: message.channel }}
-          className="text-text-secondary hover:text-accent shrink-0"
+          className="text-text-secondary hover:text-accent shrink-0 chat-message-text"
         >
           #{message.channel}
         </Link>
@@ -60,7 +60,7 @@ export function LogMessage({
       <Link
         to="/user/$channel/$user"
         params={{ channel: channelName, user: message.username }}
-        className="shrink-0 font-medium hover:underline"
+        className="shrink-0 font-medium hover:underline chat-message-text"
         style={{ color: userColor }}
       >
         {message.displayName || message.username}:

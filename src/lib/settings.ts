@@ -1,5 +1,16 @@
 const SEVENTV_EMOTES_KEY = 'loggy_7tv_emotes_enabled'
 const FONT_FAMILY_KEY = 'loggy_font_family'
+const FONT_SIZE_KEY = 'loggy_font_size'
+
+export type FontSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl'
+
+export const FONT_SIZE_OPTIONS: { value: FontSize; label: string; size: string }[] = [
+  { value: 'xs', label: 'Extra Small', size: '0.75rem' },
+  { value: 'sm', label: 'Small', size: '0.875rem' },
+  { value: 'base', label: 'Medium', size: '1rem' },
+  { value: 'lg', label: 'Large', size: '1.125rem' },
+  { value: 'xl', label: 'Extra Large', size: '1.25rem' },
+]
 
 export type FontFamily =
   | 'system'
@@ -97,11 +108,38 @@ export function setFontFamily(font: FontFamily): void {
   }
 }
 
+export function getFontSize(): FontSize {
+  if (typeof window === 'undefined') {
+    return 'base'
+  }
+  const stored = localStorage.getItem(FONT_SIZE_KEY)
+  return (stored as FontSize) || 'base'
+}
+
+export function setFontSize(size: FontSize): void {
+  if (typeof window === 'undefined') {
+    return
+  }
+  localStorage.setItem(FONT_SIZE_KEY, size)
+
+  // Update CSS variable
+  const sizeOption = FONT_SIZE_OPTIONS.find((s) => s.value === size)
+  if (sizeOption) {
+    document.documentElement.style.setProperty('--font-size', sizeOption.size)
+  }
+}
+
 // Initialize font on load
 if (typeof window !== 'undefined') {
   const font = getFontFamily()
   const fontOption = FONT_OPTIONS.find((f) => f.value === font)
   if (fontOption) {
     document.documentElement.style.setProperty('--font-family', fontOption.family)
+  }
+
+  const size = getFontSize()
+  const sizeOption = FONT_SIZE_OPTIONS.find((s) => s.value === size)
+  if (sizeOption) {
+    document.documentElement.style.setProperty('--font-size', sizeOption.size)
   }
 }
