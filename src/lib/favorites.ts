@@ -55,12 +55,7 @@ export function addFavorite(favorite: Favorite): void {
 export function removeFavorite(type: FavoriteType, channel: string, user?: string): void {
   const favorites = getFavoritesFromStorage()
   const filtered = favorites.filter(
-    (f) =>
-      !(
-        f.type === type &&
-        f.channel === channel &&
-        (type === 'channel' || f.user === user)
-      )
+    (f) => !(f.type === type && f.channel === channel && (type === 'channel' || f.user === user))
   )
   saveFavoritesToStorage(filtered)
 }
@@ -68,10 +63,7 @@ export function removeFavorite(type: FavoriteType, channel: string, user?: strin
 export function isFavorite(type: FavoriteType, channel: string, user?: string): boolean {
   const favorites = getFavoritesFromStorage()
   return favorites.some(
-    (f) =>
-      f.type === type &&
-      f.channel === channel &&
-      (type === 'channel' || f.user === user)
+    (f) => f.type === type && f.channel === channel && (type === 'channel' || f.user === user)
   )
 }
 
@@ -82,4 +74,3 @@ export function toggleFavorite(favorite: Favorite): void {
     addFavorite(favorite)
   }
 }
-

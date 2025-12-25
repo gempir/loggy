@@ -1,10 +1,10 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import {
+  addFavorite,
   type Favorite,
   getFavorites,
-  addFavorite,
-  removeFavorite,
   isFavorite,
+  removeFavorite,
   toggleFavorite as toggleFavoriteUtil,
 } from '@/lib/favorites'
 
@@ -64,12 +64,9 @@ export function useFavorites() {
     notifySubscribers()
   }, [])
 
-  const checkIsFavorite = useCallback(
-    (type: Favorite['type'], channel: string, user?: string) => {
-      return isFavorite(type, channel, user)
-    },
-    []
-  )
+  const checkIsFavorite = useCallback((type: Favorite['type'], channel: string, user?: string) => {
+    return isFavorite(type, channel, user)
+  }, [])
 
   const toggle = useCallback((favorite: Favorite) => {
     toggleFavoriteUtil(favorite)
@@ -84,4 +81,3 @@ export function useFavorites() {
     toggle,
   }
 }
-

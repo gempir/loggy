@@ -41,7 +41,9 @@ export default function Header() {
                     {favorite.type === 'channel' ? (
                       <span>#{favorite.channel}</span>
                     ) : (
-                      <span>#{favorite.channel}/{favorite.user}</span>
+                      <span>
+                        #{favorite.channel}/{favorite.user}
+                      </span>
                     )}
                   </Link>
                 ))}

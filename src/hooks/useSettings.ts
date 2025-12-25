@@ -1,10 +1,10 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import {
-  get7tvEmotesEnabled,
-  set7tvEmotesEnabled,
-  getFontFamily,
-  setFontFamily,
   type FontFamily,
+  get7tvEmotesEnabled,
+  getFontFamily,
+  set7tvEmotesEnabled,
+  setFontFamily,
 } from '@/lib/settings'
 
 const subscribers = new Set<() => void>()
