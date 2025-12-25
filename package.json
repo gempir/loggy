@@ -6,8 +6,6 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "bun run build && wrangler deploy",
-    "cf-typegen": "wrangler types",
     "test": "vitest run",
     "generate": "orval",
     "lint": "biome lint .",
@@ -35,7 +33,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.10",
-    "@cloudflare/vite-plugin": "^1.19.0",
     "@tanstack/devtools-vite": "^0.3.11",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
@@ -47,7 +44,6 @@
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
     "vitest": "^3.0.5",
-    "web-vitals": "^5.1.0",
-    "wrangler": "^4.54.0"
+    "web-vitals": "^5.1.0"
   }
 }

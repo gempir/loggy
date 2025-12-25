@@ -13,40 +13,35 @@ bun run dev
 
 ## Deployment
 
-### Cloudflare Workers
+### Cloudflare Pages (SPA Mode)
 
-The project is now configured to deploy to Cloudflare Workers. To deploy:
+This project is configured as a Single Page Application (SPA) for deployment to Cloudflare Pages. Benefits include:
+- **Simpler deployment** - Just static files served from a CDN
+- **Cheaper hosting** - No server-side rendering costs
+- **Easy to maintain** - No SSR complexity
 
-1. **Login to Cloudflare** (first time only):
-```bash
-bun dlx wrangler login
-```
+#### GitHub Integration (Recommended)
 
-2. **Deploy to Cloudflare Workers**:
-```bash
-bun run deploy
-```
+Connect your repository to Cloudflare Pages:
 
-3. **Preview locally** (optional):
-```bash
-bun run preview
-```
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → Pages
+2. Click "Create a project" → "Connect to Git"
+3. Select your repository
+4. Configure build settings:
+   - **Build command**: `bun run build`
+   - **Build output directory**: `dist`
+   - **Root directory**: `/` (default)
+   - **Environment variables**: Add `NODE_VERSION=20` (or use Bun)
 
-#### Configuration
+Cloudflare will automatically deploy on every push to your main branch.
 
-The Cloudflare Workers configuration is managed in `wrangler.jsonc`. You can customize:
-- App name: Change the `"name"` field
-- Compatibility date and flags as needed
+#### How it Works
 
-For more details, see the [TanStack Start Cloudflare Workers guide](https://tanstack.com/start/latest/docs/framework/react/guide/hosting#cloudflare-workers--official-partner).
-
-### Cloudflare Pages
-
-Alternatively, you can deploy to Cloudflare Pages with the following settings:
-
-- **Build command**: `bun run build`
-- **Build output directory**: `dist`
-- **Node version**: Use Bun or Node.js 18+
+The application is built in [SPA mode](https://tanstack.com/start/latest/docs/framework/react/guide/spa-mode), which means:
+- The initial HTML shell is prerendered at `/_shell.html`
+- All routing happens client-side after the JavaScript loads
+- The build output is purely static files (no server functions needed)
+- Perfect for CDN deployment
 
 ## Development
 
