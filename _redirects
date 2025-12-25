@@ -1,0 +1,2 @@
+# Catch all other 404 requests and rewrite them to the SPA shell
+/* /index.html 200
