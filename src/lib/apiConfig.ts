@@ -1,5 +1,5 @@
 const API_BASE_URL_KEY = 'loggy_api_base_url'
-const DEFAULT_API_BASE_URL = 'https://logs.ivr.fi'
+const DEFAULT_API_BASE_URL = 'https://logs.zonian.dev'
 
 export function getApiBaseUrl(): string {
   if (typeof window === 'undefined') {

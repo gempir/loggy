@@ -1,6 +1,6 @@
 # Loggy - Twitch Chat Logs Browser
 
-Browse and search Twitch chat logs using the IVR Logs API.
+Browse and search Twitch chat logs of rustlog compatible instances.
 
 ## Getting Started
 
