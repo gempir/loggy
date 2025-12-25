@@ -34,9 +34,9 @@ function ChannelStatsPage() {
   })
 
   return (
-    <div className="px-4 py-4">
+    <div className="px-2 py-2">
       {/* Header */}
-      <div className="mb-4">
+      <div className="mb-2">
         <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
           <Link to="/" className="hover:text-accent transition-colors">
             Channels

@@ -133,9 +133,9 @@ function UserLogsPage() {
   ]
 
   return (
-    <div className="px-4 py-3 flex flex-col h-[calc(100vh-4rem)] min-h-0">
+    <div className="px-2 py-2 flex flex-col h-[calc(100vh-4rem)] min-h-0">
       {/* Header Row: Breadcrumb + Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-2">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm">
           <Link to="/" className="text-text-secondary hover:text-accent transition-colors">
@@ -204,13 +204,13 @@ function UserLogsPage() {
             className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
           >
             <Search className="w-4 h-4" />
-            <span className="hidden sm:inline">Search</span>
+            <span className="hidden sm:inline">Search Messages</span>
           </Link>
         </div>
       </div>
 
       {/* Message Count and Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
         <div className="text-text-secondary text-sm">
           {messages ? `${messages.length.toLocaleString()} messages` : ''}
           {sortNewestFirst ? ' (newest first)' : ' (oldest first)'}

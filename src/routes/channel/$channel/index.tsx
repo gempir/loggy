@@ -153,9 +153,9 @@ function ChannelLogsPage() {
   ]
 
   return (
-    <div className="px-4 py-3 flex flex-col h-[calc(100vh-4rem)] min-h-0">
+    <div className="px-2 py-2 flex flex-col h-[calc(100vh-4rem)] min-h-0">
       {/* Header Row: Breadcrumb + Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-2">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm">
           <Link to="/" className="text-text-secondary hover:text-accent transition-colors">
@@ -214,7 +214,7 @@ function ChannelLogsPage() {
           </Link>
 
           {/* User Search */}
-          <form onSubmit={handleUserSearch} className="flex items-center gap-1">
+          <form onSubmit={handleUserSearch} className="flex items-stretch gap-1">
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
@@ -229,7 +229,7 @@ function ChannelLogsPage() {
             <button
               type="submit"
               disabled={!userSearch.trim()}
-              className="p-2 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+              className="flex items-center justify-center px-3 py-2 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
               aria-label="Search user"
             >
               <Search className="w-4 h-4" />
@@ -239,7 +239,7 @@ function ChannelLogsPage() {
       </div>
 
       {/* Message Count and Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
         <div className="text-text-secondary text-sm">
           {messages ? `${messages.length.toLocaleString()} messages` : ''}
           {sortNewestFirst ? ' (newest first)' : ' (oldest first)'}

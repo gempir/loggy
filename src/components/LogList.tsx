@@ -54,7 +54,7 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
                 key={`${message.id}-${message.timestamp}-${virtualItem.index}`}
                 data-index={virtualItem.index}
                 ref={virtualizer.measureElement}
-                className="absolute top-0 left-0 w-full px-2"
+                className="absolute top-0 left-0 w-full"
                 style={{
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
