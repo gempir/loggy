@@ -42,4 +42,3 @@ export function use7tvEmotesEnabled() {
     toggle,
   }
 }
-

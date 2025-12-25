@@ -82,13 +82,18 @@ export function ApiSettings() {
                     className="w-4 h-4"
                     viewBox="0 0 109.6 80.9"
                     fill="currentColor"
+                    role="img"
                     aria-label="7TV"
                   >
+                    <title>7TV</title>
                     <path
                       fill="#4FC2BC"
                       d="M85.4,0H24.2L0,40.5l24.2,40.4h61.2l24.2-40.4L85.4,0z M75.8,64.9H33.8L12.8,40.5l21-24.4h42l21,24.4L75.8,64.9z"
                     />
-                    <polygon fill="#4FC2BC" points="67.6,27.4 50.8,27.4 43.2,36.2 50.8,45 59.3,45 51.7,53.5 59.3,53.5 74.8,36.2" />
+                    <polygon
+                      fill="#4FC2BC"
+                      points="67.6,27.4 50.8,27.4 43.2,36.2 50.8,45 59.3,45 51.7,53.5 59.3,53.5 74.8,36.2"
+                    />
                   </svg>
                   <label htmlFor="7tv-toggle" className="text-sm text-text-primary cursor-pointer">
                     7TV Emotes

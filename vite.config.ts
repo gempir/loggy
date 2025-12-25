@@ -18,7 +18,7 @@ const config = defineConfig({
         enabled: true,
         prerender: {
           outputPath: '/index.html',
-        }
+        },
       },
     }),
     viteReact(),

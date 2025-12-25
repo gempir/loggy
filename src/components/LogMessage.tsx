@@ -10,7 +10,12 @@ interface LogMessageProps {
   emoteMap?: EmoteMap
 }
 
-export function LogMessage({ message, channelName, showChannel = false, emoteMap }: LogMessageProps) {
+export function LogMessage({
+  message,
+  channelName,
+  showChannel = false,
+  emoteMap,
+}: LogMessageProps) {
   const timestamp = new Date(message.timestamp)
   const formattedTime = timestamp.toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -63,11 +68,11 @@ export function LogMessage({ message, channelName, showChannel = false, emoteMap
 
       {/* Message text with emotes */}
       <span className="text-text-primary break-words">
-        {messageParts.map((part, index) =>
+        {messageParts.map((part) =>
           part.type === 'emote' && part.emote ? (
-            <Emote key={`${part.emote.id}-${index}`} emote={part.emote} />
+            <Emote key={`emote-${part.startIndex}-${part.emote.id}`} emote={part.emote} />
           ) : (
-            <span key={`text-${index}`}>{part.content}</span>
+            <span key={`text-${part.startIndex}`}>{part.content}</span>
           )
         )}
       </span>

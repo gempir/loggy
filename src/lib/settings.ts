@@ -15,4 +15,3 @@ export function set7tvEmotesEnabled(enabled: boolean): void {
   }
   localStorage.setItem(SEVENTV_EMOTES_KEY, String(enabled))
 }
-

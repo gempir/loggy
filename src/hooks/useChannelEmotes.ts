@@ -92,9 +92,7 @@ async function fetchChannelEmotes(channelId: string): Promise<EmoteMap> {
       const avifFile = files.find((f) => f.name === '1x.avif')
       const webpFile = files.find((f) => f.name === '1x.webp')
       const fallbackFile =
-        files.find((f) => f.name === '1x.gif') ||
-        files.find((f) => f.name === '1x.png') ||
-        files[0]
+        files.find((f) => f.name === '1x.gif') || files.find((f) => f.name === '1x.png') || files[0]
 
       // Prefer AVIF > WEBP > other formats for primary URL
       const primaryFile = avifFile || webpFile || fallbackFile
@@ -125,7 +123,7 @@ export function extractChannelId(messages: FullMessage[]): string | null {
 
   // Try to find the room-id tag in the first message
   const firstMessage = messages[0]
-  if (firstMessage.tags && firstMessage.tags['room-id']) {
+  if (firstMessage.tags?.['room-id']) {
     return firstMessage.tags['room-id']
   }
 
@@ -154,15 +152,17 @@ export interface MessagePart {
   type: 'text' | 'emote'
   content: string
   emote?: ParsedEmote
+  startIndex: number // Character position in original text for unique keys
 }
 
 export function parseMessageWithEmotes(text: string, emoteMap: EmoteMap): MessagePart[] {
   if (!emoteMap || emoteMap.size === 0) {
-    return [{ type: 'text', content: text }]
+    return [{ type: 'text', content: text, startIndex: 0 }]
   }
 
   const parts: MessagePart[] = []
   const words = text.split(/(\s+)/)
+  let currentIndex = 0
 
   for (const word of words) {
     // Check if word is whitespace
@@ -171,22 +171,24 @@ export function parseMessageWithEmotes(text: string, emoteMap: EmoteMap): Messag
       if (parts.length > 0 && parts[parts.length - 1].type === 'text') {
         parts[parts.length - 1].content += word
       } else {
-        parts.push({ type: 'text', content: word })
+        parts.push({ type: 'text', content: word, startIndex: currentIndex })
       }
+      currentIndex += word.length
       continue
     }
 
     const emote = emoteMap.get(word)
     if (emote) {
-      parts.push({ type: 'emote', content: word, emote })
+      parts.push({ type: 'emote', content: word, emote, startIndex: currentIndex })
     } else {
       // Append to last text part or create new one
       if (parts.length > 0 && parts[parts.length - 1].type === 'text') {
         parts[parts.length - 1].content += word
       } else {
-        parts.push({ type: 'text', content: word })
+        parts.push({ type: 'text', content: word, startIndex: currentIndex })
       }
     }
+    currentIndex += word.length
   }
 
   return parts

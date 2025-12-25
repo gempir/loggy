@@ -1,7 +1,7 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef, useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import type { FullMessage } from '@/api/model'
-import { useChannelEmotes, extractChannelId } from '@/hooks/useChannelEmotes'
+import { extractChannelId, useChannelEmotes } from '@/hooks/useChannelEmotes'
 import { use7tvEmotesEnabled } from '@/hooks/useSettings'
 import { LogMessage } from './LogMessage'
 

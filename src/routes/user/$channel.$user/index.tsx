@@ -11,7 +11,7 @@ import {
   Timer,
   User,
 } from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FullMessage, JsonLogsResponse } from '@/api/model'
 import { ErrorDisplay } from '@/components/ErrorDisplay'
 import { LoadingSpinner } from '@/components/LoadingSpinner'

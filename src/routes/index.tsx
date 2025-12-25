@@ -67,6 +67,11 @@ function HomePage() {
     overscan: 10, // Render 10 extra items for smooth scrolling
   })
 
+  // Focus channel input on mount
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -126,6 +131,14 @@ function HomePage() {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Handle Tab - close dropdown and let focus naturally move to user input
+    if (e.key === 'Tab') {
+      setShowDropdown(false)
+      setHighlightedIndex(-1)
+      // Don't prevent default - let Tab naturally move to next input
+      return
+    }
+
     if (!showDropdown || dropdownChannels.length === 0) return
 
     if (e.key === 'ArrowDown') {
@@ -137,9 +150,6 @@ function HomePage() {
     } else if (e.key === 'Escape') {
       setShowDropdown(false)
       setHighlightedIndex(-1)
-    } else if (e.key === 'Tab' && highlightedIndex >= 0) {
-      e.preventDefault()
-      selectChannel(dropdownChannels[highlightedIndex].name)
     }
   }
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ParsedEmote } from '@/hooks/useChannelEmotes'
 
 interface EmoteProps {
@@ -34,18 +34,16 @@ export function Emote({ emote }: EmoteProps) {
   return (
     <span
       ref={emoteRef}
+      role="img"
+      aria-label={emote.name}
       className="relative inline-block align-middle mx-px cursor-pointer"
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
       {/* Use <picture> for optimal format with fallback */}
       <picture>
-        {emote.urlAvif && (
-          <source srcSet={emote.urlAvif} type="image/avif" />
-        )}
-        {emote.urlWebp && (
-          <source srcSet={emote.urlWebp} type="image/webp" />
-        )}
+        {emote.urlAvif && <source srcSet={emote.urlAvif} type="image/avif" />}
+        {emote.urlWebp && <source srcSet={emote.urlWebp} type="image/webp" />}
         <img
           src={emote.url}
           alt={emote.name}
@@ -68,12 +66,8 @@ export function Emote({ emote }: EmoteProps) {
         >
           {/* Large emote preview with format fallback */}
           <picture>
-            {largeAvifUrl && (
-              <source srcSet={largeAvifUrl} type="image/avif" />
-            )}
-            {largeWebpUrl && (
-              <source srcSet={largeWebpUrl} type="image/webp" />
-            )}
+            {largeAvifUrl && <source srcSet={largeAvifUrl} type="image/avif" />}
+            {largeWebpUrl && <source srcSet={largeWebpUrl} type="image/webp" />}
             <img
               src={largeFallbackUrl}
               alt={emote.name}
@@ -86,9 +80,7 @@ export function Emote({ emote }: EmoteProps) {
           <span className="text-white font-semibold text-sm">{emote.name}</span>
 
           {/* Author */}
-          {emote.ownerName && (
-            <span className="text-gray-400 text-xs">by {emote.ownerName}</span>
-          )}
+          {emote.ownerName && <span className="text-gray-400 text-xs">by {emote.ownerName}</span>}
 
           {/* 7TV badge */}
           <div className="flex items-center gap-1.5 text-xs">
@@ -96,13 +88,18 @@ export function Emote({ emote }: EmoteProps) {
               className="w-3.5 h-3.5"
               viewBox="0 0 109.6 80.9"
               fill="currentColor"
+              role="img"
               aria-label="7TV"
             >
+              <title>7TV</title>
               <path
                 fill="#4FC2BC"
                 d="M85.4,0H24.2L0,40.5l24.2,40.4h61.2l24.2-40.4L85.4,0z M75.8,64.9H33.8L12.8,40.5l21-24.4h42l21,24.4L75.8,64.9z"
               />
-              <polygon fill="#4FC2BC" points="67.6,27.4 50.8,27.4 43.2,36.2 50.8,45 59.3,45 51.7,53.5 59.3,53.5 74.8,36.2" />
+              <polygon
+                fill="#4FC2BC"
+                points="67.6,27.4 50.8,27.4 43.2,36.2 50.8,45 59.3,45 51.7,53.5 59.3,53.5 74.8,36.2"
+              />
             </svg>
             <span className="text-[#4FC2BC] font-medium">7TV</span>
           </div>
