@@ -1,8 +1,0 @@
-[install]
-# Use exact versions from lockfile
-frozen = true
-
-[install.cache]
-# Cache location
-dir = "~/.bun/install/cache"
-
