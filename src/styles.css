@@ -38,6 +38,11 @@ code {
   font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
+/* Chat message text uses configurable font */
+.chat-message-text {
+  font-family: var(--font-family, "Helvetica Neue", Helvetica, Arial, sans-serif);
+}
+
 /* Scrollbar styling */
 .scrollbar-thin {
   scrollbar-width: thin;

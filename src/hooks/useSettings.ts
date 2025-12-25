@@ -1,5 +1,11 @@
 import { useCallback, useSyncExternalStore } from 'react'
-import { get7tvEmotesEnabled, set7tvEmotesEnabled } from '@/lib/settings'
+import {
+  get7tvEmotesEnabled,
+  set7tvEmotesEnabled,
+  getFontFamily,
+  setFontFamily,
+  type FontFamily,
+} from '@/lib/settings'
 
 const subscribers = new Set<() => void>()
 
@@ -22,6 +28,14 @@ function getServerSnapshot(): boolean {
   return true // Default to enabled on server
 }
 
+function getFontSnapshot(): FontFamily {
+  return getFontFamily()
+}
+
+function getFontServerSnapshot(): FontFamily {
+  return 'helvetica' // Default font on server
+}
+
 export function use7tvEmotesEnabled() {
   const enabled = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 
@@ -40,5 +54,19 @@ export function use7tvEmotesEnabled() {
     enabled,
     setEnabled,
     toggle,
+  }
+}
+
+export function useFontFamily() {
+  const font = useSyncExternalStore(subscribe, getFontSnapshot, getFontServerSnapshot)
+
+  const setFont = useCallback((value: FontFamily) => {
+    setFontFamily(value)
+    notifySubscribers()
+  }, [])
+
+  return {
+    font,
+    setFont,
   }
 }

@@ -1,11 +1,13 @@
 import { Check, RotateCcw, Settings, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useApiConfig } from '@/hooks/useApiConfig'
-import { use7tvEmotesEnabled } from '@/hooks/useSettings'
+import { use7tvEmotesEnabled, useFontFamily } from '@/hooks/useSettings'
+import { FONT_OPTIONS } from '@/lib/settings'
 
 export function ApiSettings() {
   const { apiBaseUrl, updateApiBaseUrl, resetUrl, isCustomUrl, defaultUrl } = useApiConfig()
   const { enabled: sevenTvEnabled, setEnabled: setSevenTvEnabled } = use7tvEmotesEnabled()
+  const { font, setFont } = useFontFamily()
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState(apiBaseUrl)
   const [saved, setSaved] = useState(false)
@@ -75,6 +77,25 @@ export function ApiSettings() {
             </div>
 
             <div className="p-3 space-y-4">
+              {/* Font Selection */}
+              <div>
+                <label htmlFor="font-select" className="block text-sm text-text-secondary mb-2">
+                  Font Family
+                </label>
+                <select
+                  id="font-select"
+                  value={font}
+                  onChange={(e) => setFont(e.target.value as typeof font)}
+                  className="w-full px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 cursor-pointer"
+                >
+                  {FONT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* 7TV Emotes Toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

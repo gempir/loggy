@@ -67,7 +67,7 @@ export function LogMessage({
       </Link>
 
       {/* Message text with emotes */}
-      <span className="text-text-primary break-words">
+      <span className="text-text-primary break-words chat-message-text">
         {messageParts.map((part) =>
           part.type === 'emote' && part.emote ? (
             <Emote key={`emote-${part.startIndex}-${part.emote.id}`} emote={part.emote} />

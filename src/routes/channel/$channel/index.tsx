@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { zodValidator } from '@tanstack/zod-adapter'
 import {
   ArrowDownUp,
   BarChart3,
@@ -12,6 +13,7 @@ import {
   User,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { z } from 'zod'
 import type { FullMessage, JsonLogsResponse } from '@/api/model'
 import { ErrorDisplay } from '@/components/ErrorDisplay'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -19,7 +21,31 @@ import { LogList } from '@/components/LogList'
 import { useApiConfig } from '@/hooks/useApiConfig'
 import { useFavorites } from '@/hooks/useFavorites'
 
+type AutoRefreshInterval = 0 | 5 | 10 | 30 | 60
+
+// Get today's date as default
+const getTodayDate = () => {
+  const today = new Date()
+  return {
+    year: today.getFullYear().toString(),
+    month: (today.getMonth() + 1).toString().padStart(2, '0'),
+    day: today.getDate().toString().padStart(2, '0'),
+  }
+}
+
+const defaultDate = getTodayDate()
+
+// Search params schema with defaults
+const channelSearchSchema = z.object({
+  year: z.string().default(defaultDate.year),
+  month: z.string().default(defaultDate.month),
+  day: z.string().default(defaultDate.day),
+  sort: z.enum(['newest', 'oldest']).default('newest'),
+  autoRefresh: z.number().int().min(0).max(60).default(0),
+})
+
 export const Route = createFileRoute('/channel/$channel/')({
+  validateSearch: zodValidator(channelSearchSchema),
   component: ChannelLogsPage,
 })
 
@@ -28,8 +54,6 @@ interface LogsQueryParams {
   month: string
   day: string
 }
-
-type AutoRefreshInterval = 0 | 5 | 10 | 30 | 60
 
 async function fetchChannelLogs(
   apiBaseUrl: string,
@@ -62,12 +86,11 @@ async function fetchChannelLogs(
 
 function ChannelLogsPage() {
   const { channel } = Route.useParams()
+  const search = Route.useSearch()
   const { apiBaseUrl } = useApiConfig()
   const navigate = useNavigate()
   const { isFavorite, toggle } = useFavorites()
   const [userSearch, setUserSearch] = useState('')
-  const [sortNewestFirst, setSortNewestFirst] = useState(true)
-  const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0)
   const [showAutoRefreshDropdown, setShowAutoRefreshDropdown] = useState(false)
 
   const isChannelFavorite = isFavorite('channel', channel)
@@ -80,15 +103,10 @@ function ChannelLogsPage() {
     })
   }
 
-  // Initialize with today's date
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date()
-    return {
-      year: today.getFullYear().toString(),
-      month: (today.getMonth() + 1).toString().padStart(2, '0'),
-      day: today.getDate().toString().padStart(2, '0'),
-    }
-  })
+  // Get state from URL search params
+  const selectedDate = { year: search.year, month: search.month, day: search.day }
+  const sortNewestFirst = search.sort === 'newest'
+  const autoRefreshInterval = search.autoRefresh as AutoRefreshInterval
 
   const handleUserSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -141,10 +159,43 @@ function ChannelLogsPage() {
     )
     date.setDate(date.getDate() + (direction === 'next' ? 1 : -1))
 
-    setSelectedDate({
-      year: date.getFullYear().toString(),
-      month: (date.getMonth() + 1).toString().padStart(2, '0'),
-      day: date.getDate().toString().padStart(2, '0'),
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        year: date.getFullYear().toString(),
+        month: (date.getMonth() + 1).toString().padStart(2, '0'),
+        day: date.getDate().toString().padStart(2, '0'),
+      }),
+    })
+  }
+
+  const updateDate = (dateString: string) => {
+    const date = new Date(dateString)
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        year: date.getFullYear().toString(),
+        month: (date.getMonth() + 1).toString().padStart(2, '0'),
+        day: date.getDate().toString().padStart(2, '0'),
+      }),
+    })
+  }
+
+  const toggleSort = () => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        sort: prev.sort === 'newest' ? 'oldest' : 'newest',
+      }),
+    })
+  }
+
+  const setAutoRefresh = (interval: AutoRefreshInterval) => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        autoRefresh: interval,
+      }),
     })
   }
 
@@ -208,14 +259,7 @@ function ChannelLogsPage() {
             <input
               type="date"
               value={`${selectedDate.year}-${selectedDate.month}-${selectedDate.day}`}
-              onChange={(e) => {
-                const date = new Date(e.target.value)
-                setSelectedDate({
-                  year: date.getFullYear().toString(),
-                  month: (date.getMonth() + 1).toString().padStart(2, '0'),
-                  day: date.getDate().toString().padStart(2, '0'),
-                })
-              }}
+              onChange={(e) => updateDate(e.target.value)}
               className="px-2 py-1 bg-transparent border-none text-sm focus:outline-none"
             />
 
@@ -276,7 +320,7 @@ function ChannelLogsPage() {
           {/* Sort Order Toggle */}
           <button
             type="button"
-            onClick={() => setSortNewestFirst(!sortNewestFirst)}
+            onClick={toggleSort}
             className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm transition-colors"
             title={sortNewestFirst ? 'Showing newest first' : 'Showing oldest first'}
           >
@@ -334,7 +378,7 @@ function ChannelLogsPage() {
                       key={option.value}
                       type="button"
                       onClick={() => {
-                        setAutoRefreshInterval(option.value)
+                        setAutoRefresh(option.value)
                         setShowAutoRefreshDropdown(false)
                       }}
                       className={`w-full px-4 py-2 text-left text-sm hover:bg-bg-hover transition-colors ${
