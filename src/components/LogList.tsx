@@ -15,8 +15,8 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
   const virtualizer = useVirtualizer({
     count: messages.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 28, // Estimated row height in pixels
-    overscan: 20, // Render extra items above/below visible area for smoother scrolling
+    estimateSize: () => 28, // Initial estimate, will be measured dynamically
+    overscan: 10,
   })
 
   if (messages.length === 0) {
@@ -41,9 +41,10 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
             return (
               <div
                 key={`${message.id}-${message.timestamp}-${virtualItem.index}`}
+                data-index={virtualItem.index}
+                ref={virtualizer.measureElement}
                 className="absolute top-0 left-0 w-full px-2"
                 style={{
-                  height: `${virtualItem.size}px`,
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
