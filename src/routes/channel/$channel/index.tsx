@@ -301,6 +301,7 @@ function ChannelLogsPage() {
                 aria-label="Search username"
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
+                autoComplete="off"
                 className="w-28 sm:w-36 pl-9 pr-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 placeholder:text-text-muted"
               />
             </div>
