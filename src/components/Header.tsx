@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Github, MessageSquare, Tv } from 'lucide-react'
+import { Github, MessageSquare } from 'lucide-react'
 import { useApiConfig } from '@/hooks/useApiConfig'
 import { useFavorites } from '@/hooks/useFavorites'
 import { ApiSettings } from './ApiSettings'
@@ -15,9 +15,11 @@ export default function Header() {
           <div className="flex items-center gap-3 min-w-0 flex-1">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-              <div className="w-9 h-9 bg-twitch/20 rounded-lg flex items-center justify-center group-hover:bg-twitch/30 transition-colors">
-                <Tv className="w-5 h-5 text-twitch" />
-              </div>
+              <img
+                src="/logo.png"
+                alt="Loggy"
+                className="w-9 h-9 rounded-lg group-hover:opacity-90 transition-opacity"
+              />
               <div className="flex items-baseline gap-1.5">
                 <span className="font-bold text-lg text-twitch">Loggy</span>
               </div>

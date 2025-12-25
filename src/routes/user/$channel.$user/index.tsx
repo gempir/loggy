@@ -18,11 +18,26 @@ import { LogList } from '@/components/LogList'
 import { useApiConfig } from '@/hooks/useApiConfig'
 import { useFavorites } from '@/hooks/useFavorites'
 
+type AutoRefreshInterval = 0 | 5 | 10 | 30 | 60
+
+type UserSearchParams = {
+  year?: string
+  month?: string
+  sort?: 'newest' | 'oldest'
+  autoRefresh?: number
+}
+
 export const Route = createFileRoute('/user/$channel/$user/')({
+  validateSearch: (search: Record<string, unknown>): UserSearchParams => {
+    return {
+      year: typeof search.year === 'string' ? search.year : undefined,
+      month: typeof search.month === 'string' ? search.month : undefined,
+      sort: search.sort === 'newest' || search.sort === 'oldest' ? search.sort : undefined,
+      autoRefresh: typeof search.autoRefresh === 'number' ? search.autoRefresh : undefined,
+    }
+  },
   component: UserLogsPage,
 })
-
-type AutoRefreshInterval = 0 | 5 | 10 | 30 | 60
 
 async function fetchUserLogs(
   apiBaseUrl: string,
@@ -56,10 +71,10 @@ async function fetchUserLogs(
 
 function UserLogsPage() {
   const { channel, user } = Route.useParams()
+  const search = Route.useSearch()
+  const navigate = Route.useNavigate()
   const { apiBaseUrl } = useApiConfig()
   const { isFavorite, toggle } = useFavorites()
-  const [sortNewestFirst, setSortNewestFirst] = useState(true)
-  const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0)
   const [showAutoRefreshDropdown, setShowAutoRefreshDropdown] = useState(false)
 
   const isUserFavorite = isFavorite('user', channel, user)
@@ -73,14 +88,14 @@ function UserLogsPage() {
     })
   }
 
-  // Initialize with current month
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const today = new Date()
-    return {
-      year: today.getFullYear().toString(),
-      month: (today.getMonth() + 1).toString().padStart(2, '0'),
-    }
-  })
+  // Get state from URL search params with current month as default
+  const today = new Date()
+  const selectedMonth = {
+    year: search.year ?? today.getFullYear().toString(),
+    month: search.month ?? (today.getMonth() + 1).toString().padStart(2, '0'),
+  }
+  const sortNewestFirst = (search.sort ?? 'newest') === 'newest'
+  const autoRefreshInterval = (search.autoRefresh ?? 0) as AutoRefreshInterval
 
   const {
     data: messages,
@@ -124,9 +139,13 @@ function UserLogsPage() {
     )
     date.setMonth(date.getMonth() + (direction === 'next' ? 1 : -1))
 
-    setSelectedMonth({
-      year: date.getFullYear().toString(),
-      month: (date.getMonth() + 1).toString().padStart(2, '0'),
+    navigate({
+      search: {
+        year: date.getFullYear().toString(),
+        month: (date.getMonth() + 1).toString().padStart(2, '0'),
+        sort: search.sort ?? 'newest',
+        autoRefresh: search.autoRefresh ?? 0,
+      },
     })
   }
 
@@ -199,7 +218,14 @@ function UserLogsPage() {
               value={`${selectedMonth.year}-${selectedMonth.month}`}
               onChange={(e) => {
                 const [year, month] = e.target.value.split('-')
-                setSelectedMonth({ year, month })
+                navigate({
+                  search: {
+                    year,
+                    month,
+                    sort: search.sort ?? 'newest',
+                    autoRefresh: search.autoRefresh ?? 0,
+                  },
+                })
               }}
               className="px-2 py-1 bg-transparent border-none text-sm focus:outline-none"
             />
@@ -248,7 +274,16 @@ function UserLogsPage() {
           {/* Sort Order Toggle */}
           <button
             type="button"
-            onClick={() => setSortNewestFirst(!sortNewestFirst)}
+            onClick={() =>
+              navigate({
+                search: {
+                  year: selectedMonth.year,
+                  month: selectedMonth.month,
+                  sort: (search.sort ?? 'newest') === 'newest' ? 'oldest' : 'newest',
+                  autoRefresh: search.autoRefresh ?? 0,
+                },
+              })
+            }
             className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm transition-colors"
             title={sortNewestFirst ? 'Showing newest first' : 'Showing oldest first'}
           >
@@ -306,7 +341,14 @@ function UserLogsPage() {
                       key={option.value}
                       type="button"
                       onClick={() => {
-                        setAutoRefreshInterval(option.value)
+                        navigate({
+                          search: {
+                            year: selectedMonth.year,
+                            month: selectedMonth.month,
+                            sort: search.sort ?? 'newest',
+                            autoRefresh: option.value,
+                          },
+                        })
                         setShowAutoRefreshDropdown(false)
                       }}
                       className={`w-full px-4 py-2 text-left text-sm hover:bg-bg-hover transition-colors ${
