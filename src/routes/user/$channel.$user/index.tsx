@@ -3,13 +3,11 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import {
   ArrowDownUp,
   BarChart3,
-  Calendar,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
   Search,
   Timer,
-  User,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { FullMessage, JsonLogsResponse } from '@/api/model'
@@ -118,15 +116,6 @@ function UserLogsPage() {
     })
   }
 
-  const formattedMonth = new Date(
-    parseInt(selectedMonth.year, 10),
-    parseInt(selectedMonth.month, 10) - 1,
-    1
-  ).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-  })
-
   const isCurrentMonth = () => {
     const today = new Date()
     return (
@@ -144,73 +133,37 @@ function UserLogsPage() {
   ]
 
   return (
-    <div className="px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
-          <Link to="/" className="hover:text-accent transition-colors">
+    <div className="px-4 py-3 flex flex-col h-[calc(100vh-4rem)] min-h-0">
+      {/* Header Row: Breadcrumb + Controls */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm">
+          <Link to="/" className="text-text-secondary hover:text-accent transition-colors">
             Channels
           </Link>
-          <span>/</span>
+          <span className="text-text-muted">/</span>
           <Link
             to="/channel/$channel"
             params={{ channel }}
-            className="hover:text-accent transition-colors"
+            className="text-text-secondary hover:text-accent transition-colors"
           >
-            {channel}
+            #{channel}
           </Link>
-          <span>/</span>
-          <span className="text-text-primary">{user}</span>
+          <span className="text-text-muted">/</span>
+          <span className="text-text-primary font-medium">{user}</span>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-twitch/20 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6 text-twitch" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-text-primary">{user}</h1>
-              <p className="text-text-secondary text-sm">in #{channel}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              to="/user/$channel/$user/stats"
-              params={{ channel, user }}
-              className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
-            >
-              <BarChart3 className="w-4 h-4" />
-              Stats
-            </Link>
-            <Link
-              to="/user/$channel/$user/search"
-              params={{ channel, user }}
-              className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
-            >
-              <Search className="w-4 h-4" />
-              Search
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Month Navigation */}
-      <div className="bg-bg-secondary border border-border rounded-lg p-4 mb-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-accent" />
-            <span className="font-medium">{formattedMonth}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
+        {/* Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Month Navigation */}
+          <div className="flex items-center gap-1 bg-bg-secondary border border-border rounded-lg px-2 py-1">
             <button
               type="button"
               onClick={() => navigateMonth('prev')}
-              className="p-2 hover:bg-bg-hover rounded-lg transition-colors"
+              className="p-1.5 hover:bg-bg-hover rounded transition-colors"
               title="Previous month"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
 
             <input
@@ -220,19 +173,39 @@ function UserLogsPage() {
                 const [year, month] = e.target.value.split('-')
                 setSelectedMonth({ year, month })
               }}
-              className="px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+              className="px-2 py-1 bg-transparent border-none text-sm focus:outline-none"
             />
 
             <button
               type="button"
               onClick={() => navigateMonth('next')}
               disabled={isCurrentMonth()}
-              className="p-2 hover:bg-bg-hover rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-1.5 hover:bg-bg-hover rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Next month"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Stats Link */}
+          <Link
+            to="/user/$channel/$user/stats"
+            params={{ channel, user }}
+            className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span className="hidden sm:inline">Stats</span>
+          </Link>
+
+          {/* Search Link */}
+          <Link
+            to="/user/$channel/$user/search"
+            params={{ channel, user }}
+            className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
+          >
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:inline">Search</span>
+          </Link>
         </div>
       </div>
 
@@ -326,18 +299,20 @@ function UserLogsPage() {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="py-20">
+        <div className="flex-1 flex items-center justify-center">
           <LoadingSpinner size="lg" text="Loading logs..." />
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <ErrorDisplay
-          title="Failed to load logs"
-          message={error instanceof Error ? error.message : 'Unknown error'}
-          onRetry={() => refetch()}
-        />
+        <div className="flex-1">
+          <ErrorDisplay
+            title="Failed to load logs"
+            message={error instanceof Error ? error.message : 'Unknown error'}
+            onRetry={() => refetch()}
+          />
+        </div>
       )}
 
       {/* Logs */}

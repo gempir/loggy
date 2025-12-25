@@ -39,8 +39,8 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
   }
 
   return (
-    <div className="bg-bg-secondary border border-border rounded-lg overflow-hidden">
-      <div ref={parentRef} className="h-[70vh] overflow-y-auto scrollbar-thin">
+    <div className="bg-bg-secondary border border-border rounded-md overflow-hidden flex-1 flex flex-col min-h-0">
+      <div ref={parentRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div
           className="relative w-full"
           style={{

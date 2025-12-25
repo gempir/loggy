@@ -3,7 +3,6 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import {
   ArrowDownUp,
   BarChart3,
-  Calendar,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
@@ -136,17 +135,6 @@ function ChannelLogsPage() {
     })
   }
 
-  const formattedDate = new Date(
-    parseInt(selectedDate.year, 10),
-    parseInt(selectedDate.month, 10) - 1,
-    parseInt(selectedDate.day, 10)
-  ).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-
   const isToday = () => {
     const today = new Date()
     return (
@@ -165,70 +153,29 @@ function ChannelLogsPage() {
   ]
 
   return (
-    <div className="px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
-          <Link to="/" className="hover:text-accent transition-colors">
+    <div className="px-4 py-3 flex flex-col h-[calc(100vh-4rem)] min-h-0">
+      {/* Header Row: Breadcrumb + Controls */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm">
+          <Link to="/" className="text-text-secondary hover:text-accent transition-colors">
             Channels
           </Link>
-          <span>/</span>
-          <span className="text-text-primary">{channel}</span>
+          <span className="text-text-muted">/</span>
+          <span className="text-text-primary font-medium">#{channel}</span>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold text-text-primary">#{channel}</h1>
-
-          <div className="flex items-center gap-2">
-            <Link
-              to="/channel/$channel/stats"
-              params={{ channel }}
-              className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
-            >
-              <BarChart3 className="w-4 h-4" />
-              Stats
-            </Link>
-            <form onSubmit={handleUserSearch} className="flex items-center gap-1">
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                  type="text"
-                  placeholder="Username..."
-                  aria-label="Search username"
-                  value={userSearch}
-                  onChange={(e) => setUserSearch(e.target.value)}
-                  className="w-32 sm:w-40 pl-9 pr-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 placeholder:text-text-muted"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={!userSearch.trim()}
-                className="p-2 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-                aria-label="Search user"
-              >
-                <Search className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      {/* Date Navigation */}
-      <div className="bg-bg-secondary border border-border rounded-lg p-4 mb-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-accent" />
-            <span className="font-medium">{formattedDate}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
+        {/* Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date Navigation */}
+          <div className="flex items-center gap-1 bg-bg-secondary border border-border rounded-lg px-2 py-1">
             <button
               type="button"
               onClick={() => navigateDay('prev')}
-              className="p-2 hover:bg-bg-hover rounded-lg transition-colors"
+              className="p-1.5 hover:bg-bg-hover rounded transition-colors"
               title="Previous day"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
 
             <input
@@ -242,19 +189,52 @@ function ChannelLogsPage() {
                   day: date.getDate().toString().padStart(2, '0'),
                 })
               }}
-              className="px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+              className="px-2 py-1 bg-transparent border-none text-sm focus:outline-none"
             />
 
             <button
               type="button"
               onClick={() => navigateDay('next')}
               disabled={isToday()}
-              className="p-2 hover:bg-bg-hover rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-1.5 hover:bg-bg-hover rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Next day"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Stats Link */}
+          <Link
+            to="/channel/$channel/stats"
+            params={{ channel }}
+            className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span className="hidden sm:inline">Stats</span>
+          </Link>
+
+          {/* User Search */}
+          <form onSubmit={handleUserSearch} className="flex items-center gap-1">
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+              <input
+                type="text"
+                placeholder="Username..."
+                aria-label="Search username"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="w-28 sm:w-36 pl-9 pr-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 placeholder:text-text-muted"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={!userSearch.trim()}
+              className="p-2 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+              aria-label="Search user"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+          </form>
         </div>
       </div>
 
@@ -348,18 +328,20 @@ function ChannelLogsPage() {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="py-20">
+        <div className="flex-1 flex items-center justify-center">
           <LoadingSpinner size="lg" text="Loading logs..." />
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <ErrorDisplay
-          title="Failed to load logs"
-          message={error instanceof Error ? error.message : 'Unknown error'}
-          onRetry={() => refetch()}
-        />
+        <div className="flex-1">
+          <ErrorDisplay
+            title="Failed to load logs"
+            message={error instanceof Error ? error.message : 'Unknown error'}
+            onRetry={() => refetch()}
+          />
+        </div>
       )}
 
       {/* Logs */}
