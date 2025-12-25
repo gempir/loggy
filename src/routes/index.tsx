@@ -162,9 +162,9 @@ function HomePage() {
   }
 
   return (
-    <div className="px-2 py-2 h-[calc(100vh-4rem)] flex flex-col">
+    <div className="px-2 h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
       {/* Search Section - Always visible and usable */}
-      <div className="mb-2 max-w-xl mx-auto shrink-0">
+      <div className="mt-2 mb-2 max-w-xl mx-auto shrink-0">
         <form onSubmit={handleSearch} onKeyDown={handleFormKeyDown}>
           <div className="flex gap-2">
             {/* Channel Input with Autocomplete */}
