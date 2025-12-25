@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { ParsedEmote } from '@/hooks/useChannelEmotes'
 
 interface EmoteProps {
@@ -8,6 +9,7 @@ interface EmoteProps {
 export function Emote({ emote }: EmoteProps) {
   const [showTooltip, setShowTooltip] = useState(false)
   const [tooltipPosition, setTooltipPosition] = useState<'above' | 'below'>('above')
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
   const emoteRef = useRef<HTMLSpanElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
 
@@ -16,18 +18,68 @@ export function Emote({ emote }: EmoteProps) {
   const largeWebpUrl = emote.urlWebp?.replace(/\/1x\./, '/3x.')
   const largeFallbackUrl = emote.url.replace(/\/1x\./, '/3x.')
 
-  useEffect(() => {
-    if (showTooltip && emoteRef.current) {
-      const rect = emoteRef.current.getBoundingClientRect()
-      const spaceAbove = rect.top
-      const tooltipHeight = 140 // Approximate tooltip height
+  const updateTooltipPosition = () => {
+    if (!emoteRef.current || !tooltipRef.current) return
 
-      // If not enough space above, show below
-      if (spaceAbove < tooltipHeight) {
-        setTooltipPosition('below')
-      } else {
-        setTooltipPosition('above')
-      }
+    const emoteRect = emoteRef.current.getBoundingClientRect()
+    const tooltipRect = tooltipRef.current.getBoundingClientRect()
+    const tooltipHeight = tooltipRect.height || 140 // Approximate if not measured yet
+    const tooltipWidth = tooltipRect.width || 120
+
+    const spaceAbove = emoteRect.top
+    const spaceBelow = window.innerHeight - emoteRect.bottom
+    const emoteCenterX = emoteRect.left + emoteRect.width / 2
+
+    // Determine position (above or below)
+    const position = spaceAbove >= tooltipHeight + 8 || spaceAbove > spaceBelow ? 'above' : 'below'
+
+    // Calculate horizontal position (centered on emote, but keep within viewport)
+    let left = emoteCenterX - tooltipWidth / 2
+    const padding = 8
+    if (left < padding) {
+      left = padding
+    } else if (left + tooltipWidth > window.innerWidth - padding) {
+      left = window.innerWidth - tooltipWidth - padding
+    }
+
+    // Calculate vertical position
+    const top =
+      position === 'above'
+        ? emoteRect.top - tooltipHeight - 8
+        : emoteRect.bottom + 8
+
+    setTooltipPosition(position)
+    setTooltipStyle({
+      position: 'fixed',
+      left: `${left}px`,
+      top: `${top}px`,
+      zIndex: 9999,
+    })
+  }
+
+  useEffect(() => {
+    if (!showTooltip) return
+
+    // Initial position update
+    updateTooltipPosition()
+
+    // Update position on scroll or resize
+    const handleUpdate = () => {
+      updateTooltipPosition()
+    }
+
+    window.addEventListener('scroll', handleUpdate, true)
+    window.addEventListener('resize', handleUpdate)
+
+    // Use requestAnimationFrame to ensure tooltip is rendered before measuring
+    const rafId = requestAnimationFrame(() => {
+      updateTooltipPosition()
+    })
+
+    return () => {
+      window.removeEventListener('scroll', handleUpdate, true)
+      window.removeEventListener('resize', handleUpdate)
+      cancelAnimationFrame(rafId)
     }
   }, [showTooltip])
 
@@ -47,23 +99,20 @@ export function Emote({ emote }: EmoteProps) {
         <img
           src={emote.url}
           alt={emote.name}
-          title={emote.name}
           className="inline-block align-middle h-[1.75em] w-auto"
           loading="lazy"
         />
       </picture>
 
-      {/* Tooltip */}
-      {showTooltip && (
-        <div
-          ref={tooltipRef}
-          className={`absolute z-50 flex flex-col items-center gap-2 px-3 py-2.5 rounded-lg bg-black/85 backdrop-blur-sm border border-white/10 shadow-xl whitespace-nowrap pointer-events-none ${
-            tooltipPosition === 'above'
-              ? 'bottom-full left-1/2 -translate-x-1/2 mb-2'
-              : 'top-full left-1/2 -translate-x-1/2 mt-2'
-          }`}
-          style={{ minWidth: '120px' }}
-        >
+      {/* Tooltip - rendered via portal to escape overflow containers */}
+      {showTooltip &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={tooltipRef}
+            className="flex flex-col items-center gap-2 px-3 py-2.5 rounded-lg bg-black/85 backdrop-blur-sm border border-white/10 shadow-xl whitespace-nowrap pointer-events-none"
+            style={{ ...tooltipStyle, minWidth: '120px' }}
+          >
           {/* Large emote preview with format fallback */}
           <picture>
             {largeAvifUrl && <source srcSet={largeAvifUrl} type="image/avif" />}
@@ -104,16 +153,17 @@ export function Emote({ emote }: EmoteProps) {
             <span className="text-[#4FC2BC] font-medium">7TV</span>
           </div>
 
-          {/* Tooltip arrow */}
-          <div
-            className={`absolute w-2.5 h-2.5 bg-black/85 border border-white/10 rotate-45 ${
-              tooltipPosition === 'above'
-                ? 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 border-t-0 border-l-0'
-                : 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 border-b-0 border-r-0'
-            }`}
-          />
-        </div>
-      )}
+            {/* Tooltip arrow */}
+            <div
+              className={`absolute w-2.5 h-2.5 bg-black/85 border border-white/10 rotate-45 ${
+                tooltipPosition === 'above'
+                  ? 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 border-t-0 border-l-0'
+                  : 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 border-b-0 border-r-0'
+              }`}
+            />
+          </div>,
+          document.body
+        )}
     </span>
   )
 }
