@@ -11,7 +11,10 @@ Configure your Cloudflare Pages project with:
 - **Framework preset**: None (or Vite if available)
 - **Build command**: `bun run build`
 - **Build output directory**: `dist`
+- **Root directory**: `/` (leave as default)
 - **Node.js version**: 18 or later (or use Bun)
+
+**IMPORTANT**: Do NOT set a "Deploy command" in Cloudflare Pages settings. Leave it empty. Cloudflare Pages will automatically deploy the contents of the `dist` directory after the build completes.
 
 ### Environment Variables
 
@@ -62,6 +65,8 @@ If you encounter issues:
 1. **Build fails**: Check that all dependencies are installed and `bun run build` works locally
 2. **Assets 404**: Verify the `dist/` directory structure and that `_routes.json` excludes your assets
 3. **Routes not working**: Check that the worker is being deployed correctly in the Cloudflare Pages dashboard
+4. **"Workers-specific command" error**: Make sure you don't have a "Deploy command" set in Cloudflare Pages settings. The build command should be `bun run build` and the deploy happens automatically - no deploy command needed!
+5. **Wrong wrangler command**: If you need to manually deploy, use `npx wrangler pages deploy dist` (not `wrangler deploy`)
 
 ### Base Path
 
