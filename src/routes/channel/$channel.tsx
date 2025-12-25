@@ -1,0 +1,219 @@
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { BarChart3, Calendar, ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { useState } from 'react'
+import type { FullMessage, JsonLogsResponse } from '@/api/model'
+import { ErrorDisplay } from '@/components/ErrorDisplay'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { LogList } from '@/components/LogList'
+import { useApiConfig } from '@/hooks/useApiConfig'
+
+export const Route = createFileRoute('/channel/$channel')({
+  component: ChannelLogsPage,
+})
+
+interface LogsQueryParams {
+  year: string
+  month: string
+  day: string
+}
+
+async function fetchChannelLogs(
+  apiBaseUrl: string,
+  channel: string,
+  params?: LogsQueryParams
+): Promise<FullMessage[]> {
+  let url: string
+  if (params) {
+    url = `${apiBaseUrl}/channel/${channel}/${params.year}/${params.month}/${params.day}?json=true`
+  } else {
+    // Get today's date
+    const today = new Date()
+    const year = today.getFullYear().toString()
+    const month = (today.getMonth() + 1).toString().padStart(2, '0')
+    const day = today.getDate().toString().padStart(2, '0')
+    url = `${apiBaseUrl}/channel/${channel}/${year}/${month}/${day}?json=true`
+  }
+
+  const response = await fetch(url)
+  if (!response.ok) {
+    if (response.status === 404) {
+      return []
+    }
+    throw new Error(`Failed to fetch logs: ${response.status}`)
+  }
+
+  const data: JsonLogsResponse = await response.json()
+  return data.messages || []
+}
+
+function ChannelLogsPage() {
+  const { channel } = Route.useParams()
+  const { apiBaseUrl } = useApiConfig()
+
+  // Initialize with today's date
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date()
+    return {
+      year: today.getFullYear().toString(),
+      month: (today.getMonth() + 1).toString().padStart(2, '0'),
+      day: today.getDate().toString().padStart(2, '0'),
+    }
+  })
+
+  const {
+    data: messages,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['channel-logs', channel, selectedDate, apiBaseUrl],
+    queryFn: () => fetchChannelLogs(apiBaseUrl, channel, selectedDate),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  })
+
+  const navigateDay = (direction: 'prev' | 'next') => {
+    const date = new Date(
+      parseInt(selectedDate.year, 10),
+      parseInt(selectedDate.month, 10) - 1,
+      parseInt(selectedDate.day, 10)
+    )
+    date.setDate(date.getDate() + (direction === 'next' ? 1 : -1))
+
+    setSelectedDate({
+      year: date.getFullYear().toString(),
+      month: (date.getMonth() + 1).toString().padStart(2, '0'),
+      day: date.getDate().toString().padStart(2, '0'),
+    })
+  }
+
+  const formattedDate = new Date(
+    parseInt(selectedDate.year, 10),
+    parseInt(selectedDate.month, 10) - 1,
+    parseInt(selectedDate.day, 10)
+  ).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
+  const isToday = () => {
+    const today = new Date()
+    return (
+      selectedDate.year === today.getFullYear().toString() &&
+      selectedDate.month === (today.getMonth() + 1).toString().padStart(2, '0') &&
+      selectedDate.day === today.getDate().toString().padStart(2, '0')
+    )
+  }
+
+  return (
+    <div className="px-4 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 text-text-secondary text-sm mb-2">
+          <Link to="/" className="hover:text-accent transition-colors">
+            Channels
+          </Link>
+          <span>/</span>
+          <span className="text-text-primary">{channel}</span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold text-text-primary">#{channel}</h1>
+
+          <div className="flex items-center gap-2">
+            <Link
+              to="/channel/$channel/stats"
+              params={{ channel }}
+              className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Stats
+            </Link>
+            <Link
+              to="/user/$channel/$user"
+              params={{ channel, user: '' }}
+              search={{ userSearch: true }}
+              className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
+            >
+              <Search className="w-4 h-4" />
+              Search User
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Date Navigation */}
+      <div className="bg-bg-secondary border border-border rounded-lg p-4 mb-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Calendar className="w-5 h-5 text-accent" />
+            <span className="font-medium">{formattedDate}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigateDay('prev')}
+              className="p-2 hover:bg-bg-hover rounded-lg transition-colors"
+              title="Previous day"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <input
+              type="date"
+              value={`${selectedDate.year}-${selectedDate.month}-${selectedDate.day}`}
+              onChange={(e) => {
+                const date = new Date(e.target.value)
+                setSelectedDate({
+                  year: date.getFullYear().toString(),
+                  month: (date.getMonth() + 1).toString().padStart(2, '0'),
+                  day: date.getDate().toString().padStart(2, '0'),
+                })
+              }}
+              className="px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
+            />
+
+            <button
+              type="button"
+              onClick={() => navigateDay('next')}
+              disabled={isToday()}
+              className="p-2 hover:bg-bg-hover rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Next day"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Message Count */}
+      {messages && (
+        <div className="text-text-secondary text-sm mb-4">
+          {messages.length.toLocaleString()} messages
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="py-20">
+          <LoadingSpinner size="lg" text="Loading logs..." />
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <ErrorDisplay
+          title="Failed to load logs"
+          message={error instanceof Error ? error.message : 'Unknown error'}
+          onRetry={() => refetch()}
+        />
+      )}
+
+      {/* Logs */}
+      {!isLoading && !error && messages && <LogList messages={messages} channelName={channel} />}
+    </div>
+  )
+}
