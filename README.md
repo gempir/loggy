@@ -1,12 +1,14 @@
-Welcome to your new TanStack app! 
+# Loggy - Twitch Chat Logs Browser
 
-# Getting Started
+Browse and search Twitch chat logs using the IVR Logs API.
+
+## Getting Started
 
 To run this application:
 
 ```bash
 bun install
-bun --bun run start
+bun run dev
 ```
 
 # Building For Production
@@ -14,25 +16,72 @@ bun --bun run start
 To build this application for production:
 
 ```bash
-bun --bun run build
+bun run build
 ```
 
-## Testing
+The build outputs to the `dist/` directory and is configured for Cloudflare Pages deployment.
+
+## Continuous Integration
+
+The project uses GitHub Actions for CI checks on all PRs and commits to main:
+
+- **Lint & Format Check**: Runs Biome to check code quality
+- **Tests**: Runs the test suite with Vitest
+- **Build**: Verifies production build completes successfully
+
+See `.github/workflows/ci.yml` for the full CI configuration.
+
+## Deployment
+
+### Cloudflare Pages
+
+The project is configured to deploy to Cloudflare Pages with the following settings:
+
+- **Build command**: `bun run build`
+- **Build output directory**: `dist`
+- **Node version**: Use Bun or Node.js 18+
+
+The build generates:
+
+- Static assets in `dist/assets/`
+- Cloudflare Pages Functions worker in `dist/_worker.js/`
+- Route configuration in `dist/_routes.json`
+- Cache headers in `dist/_headers`
+
+## Development
+
+### API Client Generation
+
+The API client is automatically generated from the IVR Logs API:
+
+```bash
+bun run generate
+```
+
+### Code Quality
+
+This project uses Biome for linting and formatting:
+
+```bash
+bun run lint       # Check for issues
+bun run format     # Format code
+bun run check      # Lint and format
+```
+
+### Testing
 
 This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
 
 ```bash
-bun --bun run test
+bun run test
 ```
 
 ## Styling
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
 
-
-
-
 ## Routing
+
 This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
 
 ### Adding A Route
@@ -92,7 +141,6 @@ export const Route = createRootRoute({
 The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
 
 More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
 
 ## Data Fetching
 

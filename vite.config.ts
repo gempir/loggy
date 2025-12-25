@@ -9,7 +9,10 @@ import viteTsConfigPaths from 'vite-tsconfig-paths'
 const config = defineConfig({
   plugins: [
     devtools(),
-    nitro(),
+    nitro({
+      static: true,
+      preset: 'cloudflare-pages',
+    }),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
@@ -18,7 +21,7 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
-  base: '/loggy/',
+  base: '/',
 })
 
 export default config
