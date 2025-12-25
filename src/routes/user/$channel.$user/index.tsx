@@ -7,6 +7,7 @@ import {
   ChevronRight,
   RefreshCw,
   Search,
+  Star,
   Timer,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -15,6 +16,7 @@ import { ErrorDisplay } from '@/components/ErrorDisplay'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { LogList } from '@/components/LogList'
 import { useApiConfig } from '@/hooks/useApiConfig'
+import { useFavorites } from '@/hooks/useFavorites'
 
 export const Route = createFileRoute('/user/$channel/$user/')({
   component: UserLogsPage,
@@ -55,9 +57,21 @@ async function fetchUserLogs(
 function UserLogsPage() {
   const { channel, user } = Route.useParams()
   const { apiBaseUrl } = useApiConfig()
+  const { isFavorite, toggle } = useFavorites()
   const [sortNewestFirst, setSortNewestFirst] = useState(true)
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0)
   const [showAutoRefreshDropdown, setShowAutoRefreshDropdown] = useState(false)
+
+  const isUserFavorite = isFavorite('user', channel, user)
+
+  const handleToggleFavorite = () => {
+    toggle({
+      type: 'user',
+      channel,
+      user,
+      name: `${user} in #${channel}`,
+    })
+  }
 
   // Initialize with current month
   const [selectedMonth, setSelectedMonth] = useState(() => {
@@ -151,6 +165,20 @@ function UserLogsPage() {
           </Link>
           <span className="text-text-muted">/</span>
           <span className="text-text-primary font-medium">{user}</span>
+          <button
+            type="button"
+            onClick={handleToggleFavorite}
+            className="ml-1 p-1 hover:bg-bg-hover rounded transition-colors"
+            title={isUserFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <Star
+              className={`w-4 h-4 transition-colors ${
+                isUserFavorite
+                  ? 'fill-yellow-500 text-yellow-500'
+                  : 'text-text-muted hover:text-yellow-500'
+              }`}
+            />
+          </button>
         </div>
 
         {/* Controls */}

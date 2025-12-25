@@ -1,24 +1,53 @@
 import { Link } from '@tanstack/react-router'
 import { Github, MessageSquare, Tv } from 'lucide-react'
 import { useApiConfig } from '@/hooks/useApiConfig'
+import { useFavorites } from '@/hooks/useFavorites'
 import { ApiSettings } from './ApiSettings'
 
 export default function Header() {
   const { apiBaseUrl } = useApiConfig()
+  const { favorites } = useFavorites()
 
   return (
     <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-xl border-b border-border">
       <div className="px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 bg-twitch/20 rounded-lg flex items-center justify-center group-hover:bg-twitch/30 transition-colors">
-              <Tv className="w-5 h-5 text-twitch" />
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-bold text-lg text-twitch">Loggy</span>
-            </div>
-          </Link>
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
+              <div className="w-9 h-9 bg-twitch/20 rounded-lg flex items-center justify-center group-hover:bg-twitch/30 transition-colors">
+                <Tv className="w-5 h-5 text-twitch" />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-lg text-twitch">Loggy</span>
+              </div>
+            </Link>
+
+            {/* Favorites */}
+            {favorites.length > 0 && (
+              <div className="flex items-center gap-2 overflow-x-auto flex-1 min-w-0">
+                <span className="text-text-muted text-sm flex-shrink-0">|</span>
+                {favorites.map((favorite, index) => (
+                  <Link
+                    key={`${favorite.type}-${favorite.channel}-${favorite.user || ''}-${index}`}
+                    to={favorite.type === 'channel' ? '/channel/$channel' : '/user/$channel/$user'}
+                    params={
+                      favorite.type === 'channel'
+                        ? { channel: favorite.channel }
+                        : { channel: favorite.channel, user: favorite.user! }
+                    }
+                    className="flex items-center gap-1 px-2 py-1 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-secondary rounded transition-colors whitespace-nowrap flex-shrink-0"
+                  >
+                    {favorite.type === 'channel' ? (
+                      <span>#{favorite.channel}</span>
+                    ) : (
+                      <span>#{favorite.channel}/{favorite.user}</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Navigation */}
           <nav className="flex items-center gap-2">

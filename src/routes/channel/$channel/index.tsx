@@ -7,6 +7,7 @@ import {
   ChevronRight,
   RefreshCw,
   Search,
+  Star,
   Timer,
   User,
 } from 'lucide-react'
@@ -16,6 +17,7 @@ import { ErrorDisplay } from '@/components/ErrorDisplay'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { LogList } from '@/components/LogList'
 import { useApiConfig } from '@/hooks/useApiConfig'
+import { useFavorites } from '@/hooks/useFavorites'
 
 export const Route = createFileRoute('/channel/$channel/')({
   component: ChannelLogsPage,
@@ -62,10 +64,21 @@ function ChannelLogsPage() {
   const { channel } = Route.useParams()
   const { apiBaseUrl } = useApiConfig()
   const navigate = useNavigate()
+  const { isFavorite, toggle } = useFavorites()
   const [userSearch, setUserSearch] = useState('')
   const [sortNewestFirst, setSortNewestFirst] = useState(true)
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0)
   const [showAutoRefreshDropdown, setShowAutoRefreshDropdown] = useState(false)
+
+  const isChannelFavorite = isFavorite('channel', channel)
+
+  const handleToggleFavorite = () => {
+    toggle({
+      type: 'channel',
+      channel,
+      name: `#${channel}`,
+    })
+  }
 
   // Initialize with today's date
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -163,6 +176,20 @@ function ChannelLogsPage() {
           </Link>
           <span className="text-text-muted">/</span>
           <span className="text-text-primary font-medium">#{channel}</span>
+          <button
+            type="button"
+            onClick={handleToggleFavorite}
+            className="ml-1 p-1 hover:bg-bg-hover rounded transition-colors"
+            title={isChannelFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <Star
+              className={`w-4 h-4 transition-colors ${
+                isChannelFavorite
+                  ? 'fill-yellow-500 text-yellow-500'
+                  : 'text-text-muted hover:text-yellow-500'
+              }`}
+            />
+          </button>
         </div>
 
         {/* Controls */}
