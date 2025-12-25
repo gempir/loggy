@@ -1,13 +1,16 @@
 import { Link } from '@tanstack/react-router'
 import type { FullMessage } from '@/api/model'
+import { type EmoteMap, parseMessageWithEmotes } from '@/hooks/useChannelEmotes'
+import { Emote } from './Emote'
 
 interface LogMessageProps {
   message: FullMessage
   channelName: string
   showChannel?: boolean
+  emoteMap?: EmoteMap
 }
 
-export function LogMessage({ message, channelName, showChannel = false }: LogMessageProps) {
+export function LogMessage({ message, channelName, showChannel = false, emoteMap }: LogMessageProps) {
   const timestamp = new Date(message.timestamp)
   const formattedTime = timestamp.toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -23,6 +26,9 @@ export function LogMessage({ message, channelName, showChannel = false }: LogMes
 
   // Get user color from tags if available
   const userColor = message.tags?.color || '#9147ff'
+
+  // Parse message text with emotes
+  const messageParts = parseMessageWithEmotes(message.text || '', emoteMap || new Map())
 
   return (
     <div className="group flex gap-2 py-1 px-2 hover:bg-bg-tertiary/50 rounded font-mono text-sm leading-relaxed">
@@ -55,8 +61,16 @@ export function LogMessage({ message, channelName, showChannel = false }: LogMes
         {message.displayName || message.username}:
       </Link>
 
-      {/* Message text */}
-      <span className="text-text-primary break-words">{message.text}</span>
+      {/* Message text with emotes */}
+      <span className="text-text-primary break-words">
+        {messageParts.map((part, index) =>
+          part.type === 'emote' && part.emote ? (
+            <Emote key={`${part.emote.id}-${index}`} emote={part.emote} />
+          ) : (
+            <span key={`text-${index}`}>{part.content}</span>
+          )
+        )}
+      </span>
     </div>
   )
 }

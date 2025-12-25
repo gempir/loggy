@@ -1,6 +1,7 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import type { FullMessage } from '@/api/model'
+import { useChannelEmotes, extractChannelId } from '@/hooks/useChannelEmotes'
 import { LogMessage } from './LogMessage'
 
 interface LogListProps {
@@ -11,6 +12,12 @@ interface LogListProps {
 
 export function LogList({ messages, channelName, showChannel = false }: LogListProps) {
   const parentRef = useRef<HTMLDivElement>(null)
+
+  // Extract the Twitch channel ID from messages
+  const channelId = useMemo(() => extractChannelId(messages), [messages])
+
+  // Fetch 7TV emotes for this channel using the Twitch ID
+  const { data: emoteMap } = useChannelEmotes(channelId)
 
   const virtualizer = useVirtualizer({
     count: messages.length,
@@ -48,7 +55,12 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
                   transform: `translateY(${virtualItem.start}px)`,
                 }}
               >
-                <LogMessage message={message} channelName={channelName} showChannel={showChannel} />
+                <LogMessage
+                  message={message}
+                  channelName={channelName}
+                  showChannel={showChannel}
+                  emoteMap={emoteMap}
+                />
               </div>
             )
           })}
