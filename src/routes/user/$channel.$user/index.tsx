@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { BarChart3, Calendar, ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { BarChart3, Calendar, ChevronLeft, ChevronRight, Search, User } from 'lucide-react'
 import { useState } from 'react'
 import type { FullMessage, JsonLogsResponse } from '@/api/model'
 import { ErrorDisplay } from '@/components/ErrorDisplay'
@@ -8,31 +8,26 @@ import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { LogList } from '@/components/LogList'
 import { useApiConfig } from '@/hooks/useApiConfig'
 
-export const Route = createFileRoute('/channel/$channel')({
-  component: ChannelLogsPage,
+export const Route = createFileRoute('/user/$channel/$user/')({
+  component: UserLogsPage,
 })
 
-interface LogsQueryParams {
-  year: string
-  month: string
-  day: string
-}
-
-async function fetchChannelLogs(
+async function fetchUserLogs(
   apiBaseUrl: string,
   channel: string,
-  params?: LogsQueryParams
+  user: string,
+  year?: string,
+  month?: string
 ): Promise<FullMessage[]> {
   let url: string
-  if (params) {
-    url = `${apiBaseUrl}/channel/${channel}/${params.year}/${params.month}/${params.day}?json=true`
+  if (year && month) {
+    url = `${apiBaseUrl}/channel/${channel}/user/${user}/${year}/${month}?json=true`
   } else {
-    // Get today's date
+    // Get current month
     const today = new Date()
-    const year = today.getFullYear().toString()
-    const month = (today.getMonth() + 1).toString().padStart(2, '0')
-    const day = today.getDate().toString().padStart(2, '0')
-    url = `${apiBaseUrl}/channel/${channel}/${year}/${month}/${day}?json=true`
+    const currentYear = today.getFullYear().toString()
+    const currentMonth = (today.getMonth() + 1).toString().padStart(2, '0')
+    url = `${apiBaseUrl}/channel/${channel}/user/${user}/${currentYear}/${currentMonth}?json=true`
   }
 
   const response = await fetch(url)
@@ -47,17 +42,16 @@ async function fetchChannelLogs(
   return data.messages || []
 }
 
-function ChannelLogsPage() {
-  const { channel } = Route.useParams()
+function UserLogsPage() {
+  const { channel, user } = Route.useParams()
   const { apiBaseUrl } = useApiConfig()
 
-  // Initialize with today's date
-  const [selectedDate, setSelectedDate] = useState(() => {
+  // Initialize with current month
+  const [selectedMonth, setSelectedMonth] = useState(() => {
     const today = new Date()
     return {
       year: today.getFullYear().toString(),
       month: (today.getMonth() + 1).toString().padStart(2, '0'),
-      day: today.getDate().toString().padStart(2, '0'),
     }
   })
 
@@ -67,43 +61,40 @@ function ChannelLogsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['channel-logs', channel, selectedDate, apiBaseUrl],
-    queryFn: () => fetchChannelLogs(apiBaseUrl, channel, selectedDate),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    queryKey: ['user-logs', channel, user, selectedMonth, apiBaseUrl],
+    queryFn: () =>
+      fetchUserLogs(apiBaseUrl, channel, user, selectedMonth.year, selectedMonth.month),
+    staleTime: 1000 * 60 * 5,
   })
 
-  const navigateDay = (direction: 'prev' | 'next') => {
+  const navigateMonth = (direction: 'prev' | 'next') => {
     const date = new Date(
-      parseInt(selectedDate.year, 10),
-      parseInt(selectedDate.month, 10) - 1,
-      parseInt(selectedDate.day, 10)
+      parseInt(selectedMonth.year, 10),
+      parseInt(selectedMonth.month, 10) - 1,
+      1
     )
-    date.setDate(date.getDate() + (direction === 'next' ? 1 : -1))
+    date.setMonth(date.getMonth() + (direction === 'next' ? 1 : -1))
 
-    setSelectedDate({
+    setSelectedMonth({
       year: date.getFullYear().toString(),
       month: (date.getMonth() + 1).toString().padStart(2, '0'),
-      day: date.getDate().toString().padStart(2, '0'),
     })
   }
 
-  const formattedDate = new Date(
-    parseInt(selectedDate.year, 10),
-    parseInt(selectedDate.month, 10) - 1,
-    parseInt(selectedDate.day, 10)
+  const formattedMonth = new Date(
+    parseInt(selectedMonth.year, 10),
+    parseInt(selectedMonth.month, 10) - 1,
+    1
   ).toLocaleDateString('en-US', {
-    weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric',
   })
 
-  const isToday = () => {
+  const isCurrentMonth = () => {
     const today = new Date()
     return (
-      selectedDate.year === today.getFullYear().toString() &&
-      selectedDate.month === (today.getMonth() + 1).toString().padStart(2, '0') &&
-      selectedDate.day === today.getDate().toString().padStart(2, '0')
+      selectedMonth.year === today.getFullYear().toString() &&
+      selectedMonth.month === (today.getMonth() + 1).toString().padStart(2, '0')
     )
   }
 
@@ -116,72 +107,83 @@ function ChannelLogsPage() {
             Channels
           </Link>
           <span>/</span>
-          <span className="text-text-primary">{channel}</span>
+          <Link
+            to="/channel/$channel"
+            params={{ channel }}
+            className="hover:text-accent transition-colors"
+          >
+            {channel}
+          </Link>
+          <span>/</span>
+          <span className="text-text-primary">{user}</span>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold text-text-primary">#{channel}</h1>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-twitch/20 rounded-full flex items-center justify-center">
+              <User className="w-6 h-6 text-twitch" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-text-primary">{user}</h1>
+              <p className="text-text-secondary text-sm">in #{channel}</p>
+            </div>
+          </div>
 
           <div className="flex items-center gap-2">
             <Link
-              to="/channel/$channel/stats"
-              params={{ channel }}
+              to="/user/$channel/$user/stats"
+              params={{ channel, user }}
               className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
             >
               <BarChart3 className="w-4 h-4" />
               Stats
             </Link>
             <Link
-              to="/user/$channel/$user"
-              params={{ channel, user: '' }}
-              search={{ userSearch: true }}
+              to="/user/$channel/$user/search"
+              params={{ channel, user }}
               className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm font-medium transition-colors"
             >
               <Search className="w-4 h-4" />
-              Search User
+              Search
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Date Navigation */}
+      {/* Month Navigation */}
       <div className="bg-bg-secondary border border-border rounded-lg p-4 mb-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Calendar className="w-5 h-5 text-accent" />
-            <span className="font-medium">{formattedDate}</span>
+            <span className="font-medium">{formattedMonth}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => navigateDay('prev')}
+              onClick={() => navigateMonth('prev')}
               className="p-2 hover:bg-bg-hover rounded-lg transition-colors"
-              title="Previous day"
+              title="Previous month"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
             <input
-              type="date"
-              value={`${selectedDate.year}-${selectedDate.month}-${selectedDate.day}`}
+              type="month"
+              value={`${selectedMonth.year}-${selectedMonth.month}`}
               onChange={(e) => {
-                const date = new Date(e.target.value)
-                setSelectedDate({
-                  year: date.getFullYear().toString(),
-                  month: (date.getMonth() + 1).toString().padStart(2, '0'),
-                  day: date.getDate().toString().padStart(2, '0'),
-                })
+                const [year, month] = e.target.value.split('-')
+                setSelectedMonth({ year, month })
               }}
               className="px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent"
             />
 
             <button
               type="button"
-              onClick={() => navigateDay('next')}
-              disabled={isToday()}
+              onClick={() => navigateMonth('next')}
+              disabled={isCurrentMonth()}
               className="p-2 hover:bg-bg-hover rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Next day"
+              title="Next month"
             >
               <ChevronRight className="w-5 h-5" />
             </button>

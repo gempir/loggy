@@ -10,99 +10,102 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ChannelChannelRouteImport } from './routes/channel/$channel'
-import { Route as UserChannelUserRouteImport } from './routes/user/$channel.$user'
-import { Route as ChannelChannelStatsRouteImport } from './routes/channel/$channel.stats'
-import { Route as UserChannelUserStatsRouteImport } from './routes/user/$channel.$user.stats'
-import { Route as UserChannelUserSearchRouteImport } from './routes/user/$channel.$user.search'
+import { Route as ChannelChannelIndexRouteImport } from './routes/channel/$channel/index'
+import { Route as ChannelChannelStatsRouteImport } from './routes/channel/$channel/stats'
+import { Route as UserChannelUserIndexRouteImport } from './routes/user/$channel.$user/index'
+import { Route as UserChannelUserStatsRouteImport } from './routes/user/$channel.$user/stats'
+import { Route as UserChannelUserSearchRouteImport } from './routes/user/$channel.$user/search'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChannelChannelRoute = ChannelChannelRouteImport.update({
-  id: '/channel/$channel',
-  path: '/channel/$channel',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UserChannelUserRoute = UserChannelUserRouteImport.update({
-  id: '/user/$channel/$user',
-  path: '/user/$channel/$user',
+const ChannelChannelIndexRoute = ChannelChannelIndexRouteImport.update({
+  id: '/channel/$channel/',
+  path: '/channel/$channel/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChannelChannelStatsRoute = ChannelChannelStatsRouteImport.update({
-  id: '/stats',
-  path: '/stats',
-  getParentRoute: () => ChannelChannelRoute,
+  id: '/channel/$channel/stats',
+  path: '/channel/$channel/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserChannelUserIndexRoute = UserChannelUserIndexRouteImport.update({
+  id: '/user/$channel/$user/',
+  path: '/user/$channel/$user/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const UserChannelUserStatsRoute = UserChannelUserStatsRouteImport.update({
-  id: '/stats',
-  path: '/stats',
-  getParentRoute: () => UserChannelUserRoute,
+  id: '/user/$channel/$user/stats',
+  path: '/user/$channel/$user/stats',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const UserChannelUserSearchRoute = UserChannelUserSearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => UserChannelUserRoute,
+  id: '/user/$channel/$user/search',
+  path: '/user/$channel/$user/search',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/channel/$channel': typeof ChannelChannelRouteWithChildren
   '/channel/$channel/stats': typeof ChannelChannelStatsRoute
-  '/user/$channel/$user': typeof UserChannelUserRouteWithChildren
+  '/channel/$channel': typeof ChannelChannelIndexRoute
   '/user/$channel/$user/search': typeof UserChannelUserSearchRoute
   '/user/$channel/$user/stats': typeof UserChannelUserStatsRoute
+  '/user/$channel/$user': typeof UserChannelUserIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/channel/$channel': typeof ChannelChannelRouteWithChildren
   '/channel/$channel/stats': typeof ChannelChannelStatsRoute
-  '/user/$channel/$user': typeof UserChannelUserRouteWithChildren
+  '/channel/$channel': typeof ChannelChannelIndexRoute
   '/user/$channel/$user/search': typeof UserChannelUserSearchRoute
   '/user/$channel/$user/stats': typeof UserChannelUserStatsRoute
+  '/user/$channel/$user': typeof UserChannelUserIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/channel/$channel': typeof ChannelChannelRouteWithChildren
   '/channel/$channel/stats': typeof ChannelChannelStatsRoute
-  '/user/$channel/$user': typeof UserChannelUserRouteWithChildren
+  '/channel/$channel/': typeof ChannelChannelIndexRoute
   '/user/$channel/$user/search': typeof UserChannelUserSearchRoute
   '/user/$channel/$user/stats': typeof UserChannelUserStatsRoute
+  '/user/$channel/$user/': typeof UserChannelUserIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/channel/$channel'
     | '/channel/$channel/stats'
-    | '/user/$channel/$user'
+    | '/channel/$channel'
     | '/user/$channel/$user/search'
     | '/user/$channel/$user/stats'
+    | '/user/$channel/$user'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/channel/$channel'
     | '/channel/$channel/stats'
-    | '/user/$channel/$user'
+    | '/channel/$channel'
     | '/user/$channel/$user/search'
     | '/user/$channel/$user/stats'
+    | '/user/$channel/$user'
   id:
     | '__root__'
     | '/'
-    | '/channel/$channel'
     | '/channel/$channel/stats'
-    | '/user/$channel/$user'
+    | '/channel/$channel/'
     | '/user/$channel/$user/search'
     | '/user/$channel/$user/stats'
+    | '/user/$channel/$user/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ChannelChannelRoute: typeof ChannelChannelRouteWithChildren
-  UserChannelUserRoute: typeof UserChannelUserRouteWithChildren
+  ChannelChannelStatsRoute: typeof ChannelChannelStatsRoute
+  ChannelChannelIndexRoute: typeof ChannelChannelIndexRoute
+  UserChannelUserSearchRoute: typeof UserChannelUserSearchRoute
+  UserChannelUserStatsRoute: typeof UserChannelUserStatsRoute
+  UserChannelUserIndexRoute: typeof UserChannelUserIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -114,74 +117,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/channel/$channel': {
-      id: '/channel/$channel'
+    '/channel/$channel/': {
+      id: '/channel/$channel/'
       path: '/channel/$channel'
       fullPath: '/channel/$channel'
-      preLoaderRoute: typeof ChannelChannelRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/user/$channel/$user': {
-      id: '/user/$channel/$user'
-      path: '/user/$channel/$user'
-      fullPath: '/user/$channel/$user'
-      preLoaderRoute: typeof UserChannelUserRouteImport
+      preLoaderRoute: typeof ChannelChannelIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/channel/$channel/stats': {
       id: '/channel/$channel/stats'
-      path: '/stats'
+      path: '/channel/$channel/stats'
       fullPath: '/channel/$channel/stats'
       preLoaderRoute: typeof ChannelChannelStatsRouteImport
-      parentRoute: typeof ChannelChannelRoute
+      parentRoute: typeof rootRouteImport
+    }
+    '/user/$channel/$user/': {
+      id: '/user/$channel/$user/'
+      path: '/user/$channel/$user'
+      fullPath: '/user/$channel/$user'
+      preLoaderRoute: typeof UserChannelUserIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/user/$channel/$user/stats': {
       id: '/user/$channel/$user/stats'
-      path: '/stats'
+      path: '/user/$channel/$user/stats'
       fullPath: '/user/$channel/$user/stats'
       preLoaderRoute: typeof UserChannelUserStatsRouteImport
-      parentRoute: typeof UserChannelUserRoute
+      parentRoute: typeof rootRouteImport
     }
     '/user/$channel/$user/search': {
       id: '/user/$channel/$user/search'
-      path: '/search'
+      path: '/user/$channel/$user/search'
       fullPath: '/user/$channel/$user/search'
       preLoaderRoute: typeof UserChannelUserSearchRouteImport
-      parentRoute: typeof UserChannelUserRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface ChannelChannelRouteChildren {
-  ChannelChannelStatsRoute: typeof ChannelChannelStatsRoute
-}
-
-const ChannelChannelRouteChildren: ChannelChannelRouteChildren = {
-  ChannelChannelStatsRoute: ChannelChannelStatsRoute,
-}
-
-const ChannelChannelRouteWithChildren = ChannelChannelRoute._addFileChildren(
-  ChannelChannelRouteChildren,
-)
-
-interface UserChannelUserRouteChildren {
-  UserChannelUserSearchRoute: typeof UserChannelUserSearchRoute
-  UserChannelUserStatsRoute: typeof UserChannelUserStatsRoute
-}
-
-const UserChannelUserRouteChildren: UserChannelUserRouteChildren = {
-  UserChannelUserSearchRoute: UserChannelUserSearchRoute,
-  UserChannelUserStatsRoute: UserChannelUserStatsRoute,
-}
-
-const UserChannelUserRouteWithChildren = UserChannelUserRoute._addFileChildren(
-  UserChannelUserRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ChannelChannelRoute: ChannelChannelRouteWithChildren,
-  UserChannelUserRoute: UserChannelUserRouteWithChildren,
+  ChannelChannelStatsRoute: ChannelChannelStatsRoute,
+  ChannelChannelIndexRoute: ChannelChannelIndexRoute,
+  UserChannelUserSearchRoute: UserChannelUserSearchRoute,
+  UserChannelUserStatsRoute: UserChannelUserStatsRoute,
+  UserChannelUserIndexRoute: UserChannelUserIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

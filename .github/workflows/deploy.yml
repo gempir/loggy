@@ -45,14 +45,24 @@ jobs:
           # Wait for server to start
           sleep 3
           
-          # Fetch the shell HTML
-          curl -s http://localhost:3000/ > .output/public/index.html
+          # Fetch the shell HTML (note: base path is /loggy/)
+          curl -s http://localhost:3000/loggy/ > .output/public/index.html
+          
+          # Check if index.html has content
+          if [ ! -s .output/public/index.html ]; then
+            echo "ERROR: index.html is empty!"
+            cat .output/public/index.html
+            exit 1
+          fi
           
           # Kill the server
           kill $SERVER_PID 2>/dev/null || true
           
           # Copy index.html as 404.html for GitHub Pages SPA routing
           cp .output/public/index.html .output/public/404.html
+          
+          # Show file sizes for debugging
+          ls -la .output/public/index.html .output/public/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
