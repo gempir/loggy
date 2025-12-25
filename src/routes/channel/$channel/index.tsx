@@ -1,7 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { BarChart3, Calendar, ChevronLeft, ChevronRight, Search, User } from 'lucide-react'
-import { useState } from 'react'
+import {
+  ArrowDownUp,
+  BarChart3,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  Search,
+  Timer,
+  User,
+} from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
 import type { FullMessage, JsonLogsResponse } from '@/api/model'
 import { ErrorDisplay } from '@/components/ErrorDisplay'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
@@ -17,6 +27,8 @@ interface LogsQueryParams {
   month: string
   day: string
 }
+
+type AutoRefreshInterval = 0 | 5 | 10 | 30 | 60
 
 async function fetchChannelLogs(
   apiBaseUrl: string,
@@ -52,6 +64,9 @@ function ChannelLogsPage() {
   const { apiBaseUrl } = useApiConfig()
   const navigate = useNavigate()
   const [userSearch, setUserSearch] = useState('')
+  const [sortNewestFirst, setSortNewestFirst] = useState(true)
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState<AutoRefreshInterval>(0)
+  const [showAutoRefreshDropdown, setShowAutoRefreshDropdown] = useState(false)
 
   // Initialize with today's date
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -78,11 +93,33 @@ function ChannelLogsPage() {
     isLoading,
     error,
     refetch,
+    isFetching,
   } = useQuery({
     queryKey: ['channel-logs', channel, selectedDate, apiBaseUrl],
     queryFn: () => fetchChannelLogs(apiBaseUrl, channel, selectedDate),
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
+
+  // Auto-refresh effect
+  useEffect(() => {
+    if (autoRefreshInterval === 0) return
+
+    const intervalMs = autoRefreshInterval * 1000
+    const interval = setInterval(() => {
+      refetch()
+    }, intervalMs)
+
+    return () => clearInterval(interval)
+  }, [autoRefreshInterval, refetch])
+
+  // Sort messages based on preference
+  const sortedMessages = useMemo(() => {
+    if (!messages) return []
+    if (sortNewestFirst) {
+      return [...messages].reverse()
+    }
+    return messages
+  }, [messages, sortNewestFirst])
 
   const navigateDay = (direction: 'prev' | 'next') => {
     const date = new Date(
@@ -118,6 +155,14 @@ function ChannelLogsPage() {
       selectedDate.day === today.getDate().toString().padStart(2, '0')
     )
   }
+
+  const autoRefreshOptions: { value: AutoRefreshInterval; label: string }[] = [
+    { value: 0, label: 'Off' },
+    { value: 5, label: '5s' },
+    { value: 10, label: '10s' },
+    { value: 30, label: '30s' },
+    { value: 60, label: '60s' },
+  ]
 
   return (
     <div className="px-4 py-8">
@@ -213,12 +258,93 @@ function ChannelLogsPage() {
         </div>
       </div>
 
-      {/* Message Count */}
-      {messages && (
-        <div className="text-text-secondary text-sm mb-4">
-          {messages.length.toLocaleString()} messages
+      {/* Message Count and Controls */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <div className="text-text-secondary text-sm">
+          {messages ? `${messages.length.toLocaleString()} messages` : ''}
+          {sortNewestFirst ? ' (newest first)' : ' (oldest first)'}
         </div>
-      )}
+
+        <div className="flex items-center gap-2">
+          {/* Sort Order Toggle */}
+          <button
+            type="button"
+            onClick={() => setSortNewestFirst(!sortNewestFirst)}
+            className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm transition-colors"
+            title={sortNewestFirst ? 'Showing newest first' : 'Showing oldest first'}
+          >
+            <ArrowDownUp className="w-4 h-4" />
+            <span className="hidden sm:inline">{sortNewestFirst ? 'Newest' : 'Oldest'}</span>
+          </button>
+
+          {/* Refresh Button */}
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border rounded-lg text-sm transition-colors disabled:opacity-50"
+            title="Refresh messages"
+          >
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+
+          {/* Auto Refresh Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowAutoRefreshDropdown(!showAutoRefreshDropdown)}
+              className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${
+                autoRefreshInterval > 0
+                  ? 'bg-accent/20 border-accent text-accent'
+                  : 'bg-bg-tertiary hover:bg-bg-hover border-border'
+              }`}
+              title="Auto refresh"
+            >
+              <Timer className="w-4 h-4" />
+              <span className="hidden sm:inline">
+                {autoRefreshInterval > 0 ? `${autoRefreshInterval}s` : 'Auto'}
+              </span>
+            </button>
+
+            {showAutoRefreshDropdown && (
+              <>
+                {/* Backdrop */}
+                <button
+                  type="button"
+                  className="fixed inset-0 z-40 cursor-default"
+                  onClick={() => setShowAutoRefreshDropdown(false)}
+                  aria-label="Close dropdown"
+                />
+
+                {/* Dropdown */}
+                <div className="absolute right-0 top-full mt-1 z-50 bg-bg-secondary border border-border rounded-lg shadow-xl overflow-hidden">
+                  <div className="p-2 border-b border-border">
+                    <span className="text-xs text-text-muted">Auto Refresh</span>
+                  </div>
+                  {autoRefreshOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setAutoRefreshInterval(option.value)
+                        setShowAutoRefreshDropdown(false)
+                      }}
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-bg-hover transition-colors ${
+                        autoRefreshInterval === option.value
+                          ? 'text-accent bg-accent/10'
+                          : 'text-text-primary'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Loading State */}
       {isLoading && (
@@ -237,7 +363,9 @@ function ChannelLogsPage() {
       )}
 
       {/* Logs */}
-      {!isLoading && !error && messages && <LogList messages={messages} channelName={channel} />}
+      {!isLoading && !error && messages && (
+        <LogList messages={sortedMessages} channelName={channel} />
+      )}
     </div>
   )
 }
