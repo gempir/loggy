@@ -2,6 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef, useMemo } from 'react'
 import type { FullMessage } from '@/api/model'
 import { useChannelEmotes, extractChannelId } from '@/hooks/useChannelEmotes'
+import { use7tvEmotesEnabled } from '@/hooks/useSettings'
 import { LogMessage } from './LogMessage'
 
 interface LogListProps {
@@ -13,11 +14,14 @@ interface LogListProps {
 export function LogList({ messages, channelName, showChannel = false }: LogListProps) {
   const parentRef = useRef<HTMLDivElement>(null)
 
+  // Check if 7TV emotes are enabled in settings
+  const { enabled: sevenTvEnabled } = use7tvEmotesEnabled()
+
   // Extract the Twitch channel ID from messages
   const channelId = useMemo(() => extractChannelId(messages), [messages])
 
-  // Fetch 7TV emotes for this channel using the Twitch ID
-  const { data: emoteMap } = useChannelEmotes(channelId)
+  // Fetch 7TV emotes for this channel using the Twitch ID (only if enabled)
+  const { data: emoteMap } = useChannelEmotes(sevenTvEnabled ? channelId : null)
 
   const virtualizer = useVirtualizer({
     count: messages.length,

@@ -4,7 +4,9 @@ import type { FullMessage } from '@/api/model'
 export interface ParsedEmote {
   id: string
   name: string
-  url: string
+  url: string // Primary URL (AVIF if available, else WEBP)
+  urlAvif?: string // AVIF URL for <picture> source
+  urlWebp?: string // WEBP URL for fallback
   ownerName?: string
   animated: boolean
 }
@@ -86,20 +88,24 @@ async function fetchChannelEmotes(channelId: string): Promise<EmoteMap> {
       const baseUrl = emoteData.host?.url || `//cdn.7tv.app/emote/${emote.id}`
       const files = emoteData.host?.files || []
 
-      // Find the best file for display (prefer WEBP, fallback to others)
-      const preferredFile =
-        files.find((f) => f.name === '1x.webp') ||
-        files.find((f) => f.name === '1x.avif') ||
+      // Find AVIF and WEBP files for optimal loading with fallback
+      const avifFile = files.find((f) => f.name === '1x.avif')
+      const webpFile = files.find((f) => f.name === '1x.webp')
+      const fallbackFile =
         files.find((f) => f.name === '1x.gif') ||
         files.find((f) => f.name === '1x.png') ||
         files[0]
 
-      const fileName = preferredFile?.name || '1x.webp'
+      // Prefer AVIF > WEBP > other formats for primary URL
+      const primaryFile = avifFile || webpFile || fallbackFile
+      const fileName = primaryFile?.name || '1x.webp'
 
       emoteMap.set(emote.name, {
         id: emote.id,
         name: emote.name,
         url: `https:${baseUrl}/${fileName}`,
+        urlAvif: avifFile ? `https:${baseUrl}/${avifFile.name}` : undefined,
+        urlWebp: webpFile ? `https:${baseUrl}/${webpFile.name}` : undefined,
         ownerName: emoteData.owner?.display_name || emoteData.owner?.username,
         animated: emoteData.animated || false,
       })

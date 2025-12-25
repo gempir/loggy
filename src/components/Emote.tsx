@@ -11,8 +11,10 @@ export function Emote({ emote }: EmoteProps) {
   const emoteRef = useRef<HTMLSpanElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
 
-  // Get larger emote URL for tooltip (3x size)
-  const largeEmoteUrl = emote.url.replace(/\/1x\./, '/3x.')
+  // Get larger emote URLs for tooltip (3x size)
+  const largeAvifUrl = emote.urlAvif?.replace(/\/1x\./, '/3x.')
+  const largeWebpUrl = emote.urlWebp?.replace(/\/1x\./, '/3x.')
+  const largeFallbackUrl = emote.url.replace(/\/1x\./, '/3x.')
 
   useEffect(() => {
     if (showTooltip && emoteRef.current) {
@@ -36,13 +38,22 @@ export function Emote({ emote }: EmoteProps) {
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      <img
-        src={emote.url}
-        alt={emote.name}
-        title={emote.name}
-        className="inline-block align-middle h-[1.75em] w-auto"
-        loading="lazy"
-      />
+      {/* Use <picture> for optimal format with fallback */}
+      <picture>
+        {emote.urlAvif && (
+          <source srcSet={emote.urlAvif} type="image/avif" />
+        )}
+        {emote.urlWebp && (
+          <source srcSet={emote.urlWebp} type="image/webp" />
+        )}
+        <img
+          src={emote.url}
+          alt={emote.name}
+          title={emote.name}
+          className="inline-block align-middle h-[1.75em] w-auto"
+          loading="lazy"
+        />
+      </picture>
 
       {/* Tooltip */}
       {showTooltip && (
@@ -55,13 +66,21 @@ export function Emote({ emote }: EmoteProps) {
           }`}
           style={{ minWidth: '120px' }}
         >
-          {/* Large emote preview */}
-          <img
-            src={largeEmoteUrl}
-            alt={emote.name}
-            className="h-16 w-auto object-contain"
-            loading="lazy"
-          />
+          {/* Large emote preview with format fallback */}
+          <picture>
+            {largeAvifUrl && (
+              <source srcSet={largeAvifUrl} type="image/avif" />
+            )}
+            {largeWebpUrl && (
+              <source srcSet={largeWebpUrl} type="image/webp" />
+            )}
+            <img
+              src={largeFallbackUrl}
+              alt={emote.name}
+              className="h-16 w-auto object-contain"
+              loading="lazy"
+            />
+          </picture>
 
           {/* Emote name */}
           <span className="text-white font-semibold text-sm">{emote.name}</span>
@@ -101,4 +120,3 @@ export function Emote({ emote }: EmoteProps) {
     </span>
   )
 }
-
