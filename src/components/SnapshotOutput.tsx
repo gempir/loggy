@@ -2,7 +2,7 @@ import { Check, Copy, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { FullMessage } from '@/api/model'
 import type { SnapshotConfig } from '@/hooks/useSnapshot'
-import { type EmoteMap, parseMessageWithEmotes } from '@/hooks/useChannelEmotes'
+import type { EmoteMap } from '@/hooks/useChannelEmotes'
 
 export interface SnapshotOutputProps {
   messages: FullMessage[]
@@ -19,11 +19,17 @@ function isEmoteOnlyMessage(text: string, emoteMap?: EmoteMap): boolean {
 
   // Clean the text by removing invisible/control characters and other Unicode garbage
   // This handles cases like "BANGER 󠀀" or "UncPls  ͏" where there are invisible/weird Unicode chars
+  // Using multiple replace calls to avoid linter warnings about control chars and combining chars
   const cleanedText = text
-    .replace(
-      /[\u0000-\u001F\u007F-\u009F\u200B-\u200D\uFEFF\u{E0000}-\u{E007F}\u034F\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE00-\uFE0F\u{E0100}-\u{E01EF}]/gu,
-      ''
-    )
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally removing control characters
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Control characters
+    .replace(/[\u200B-\u200D\uFEFF]/g, '') // Zero-width spaces
+    .replace(/[\u034F]/g, '') // Combining grapheme joiner
+    .replace(/[\u0300-\u036F]/g, '') // Combining diacritical marks
+    .replace(/[\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF]/g, '') // Extended combining marks
+    .replace(/[\uFE00-\uFE0F]/g, '') // Variation selectors
+    .replace(/[\u{E0000}-\u{E007F}]/gu, '') // Tag characters
+    .replace(/[\u{E0100}-\u{E01EF}]/gu, '') // Variation selectors supplement
     .trim()
 
   if (cleanedText.length === 0) return true
