@@ -7,6 +7,7 @@ interface LogMessageProps {
   message: FullMessage
   channelName: string
   showChannel?: boolean
+  showDate?: boolean
   emoteMap?: EmoteMap
 }
 
@@ -14,6 +15,7 @@ export function LogMessage({
   message,
   channelName,
   showChannel = false,
+  showDate = false,
   emoteMap,
 }: LogMessageProps) {
   const timestamp = new Date(message.timestamp)
@@ -42,7 +44,7 @@ export function LogMessage({
         className="text-text-muted shrink-0 tabular-nums font-mono chat-message-text"
         title={`${formattedDate} ${formattedTime}`}
       >
-        {formattedTime}
+        {showDate ? `${formattedDate} ${formattedTime}` : formattedTime}
       </span>
 
       {/* Channel (optional) */}

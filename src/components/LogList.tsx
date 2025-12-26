@@ -10,9 +10,15 @@ interface LogListProps {
   messages: FullMessage[]
   channelName: string
   showChannel?: boolean
+  showDate?: boolean
 }
 
-export function LogList({ messages, channelName, showChannel = false }: LogListProps) {
+export function LogList({
+  messages,
+  channelName,
+  showChannel = false,
+  showDate = false,
+}: LogListProps) {
   const parentRef = useRef<HTMLDivElement>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
 
@@ -83,6 +89,7 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
                   message={message}
                   channelName={channelName}
                   showChannel={showChannel}
+                  showDate={showDate}
                   emoteMap={emoteMap}
                 />
               </div>
