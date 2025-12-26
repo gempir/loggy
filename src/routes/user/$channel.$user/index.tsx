@@ -387,7 +387,7 @@ function UserLogsPage() {
 
       {/* Logs */}
       {!isLoading && !error && messages && (
-        <LogList messages={sortedMessages} channelName={channel} />
+        <LogList messages={sortedMessages} channelName={channel} showDate={true} />
       )}
     </div>
   )
