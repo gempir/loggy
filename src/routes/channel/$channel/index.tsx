@@ -16,8 +16,13 @@ import type { FullMessage, JsonLogsResponse } from '@/api/model'
 import { ErrorDisplay } from '@/components/ErrorDisplay'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { LogList } from '@/components/LogList'
+import { SnapshotButton } from '@/components/SnapshotButton'
+import { SnapshotOutput } from '@/components/SnapshotOutput'
 import { useApiConfig } from '@/hooks/useApiConfig'
+import { extractChannelId, useChannelEmotes } from '@/hooks/useChannelEmotes'
 import { useFavorites } from '@/hooks/useFavorites'
+import { use7tvEmotesEnabled } from '@/hooks/useSettings'
+import { useSnapshot } from '@/hooks/useSnapshot'
 
 type AutoRefreshInterval = 0 | 5 | 10 | 30 | 60
 
@@ -86,6 +91,7 @@ function ChannelLogsPage() {
   const { isFavorite, toggle } = useFavorites()
   const [userSearch, setUserSearch] = useState('')
   const [showAutoRefreshDropdown, setShowAutoRefreshDropdown] = useState(false)
+  const [showSnapshotOutput, setShowSnapshotOutput] = useState(false)
 
   const isChannelFavorite = isFavorite('channel', channel)
 
@@ -149,6 +155,29 @@ function ChannelLogsPage() {
     }
     return messages
   }, [messages, sortNewestFirst])
+
+  // Fetch 7TV emotes for emote detection in snapshot
+  const { enabled: sevenTvEnabled } = use7tvEmotesEnabled()
+  const channelId = useMemo(() => extractChannelId(sortedMessages), [sortedMessages])
+  const { data: emoteMap } = useChannelEmotes(sevenTvEnabled ? channelId : null)
+
+  // Snapshot functionality
+  const snapshot = useSnapshot(sortedMessages, refetch)
+
+  const handleSnapshotStop = () => {
+    snapshot.stopSnapshot()
+    setShowSnapshotOutput(true)
+  }
+
+  const handleSnapshotPast = (seconds: number) => {
+    snapshot.snapshotFromPast(seconds)
+    setShowSnapshotOutput(true)
+  }
+
+  const handleCloseSnapshotOutput = () => {
+    setShowSnapshotOutput(false)
+    snapshot.reset()
+  }
 
   const navigateDay = (direction: 'prev' | 'next') => {
     const date = new Date(
@@ -322,9 +351,22 @@ function ChannelLogsPage() {
         <div className="text-text-secondary text-sm">
           {messages ? `${messages.length.toLocaleString()} messages` : ''}
           {sortNewestFirst ? ' (newest first)' : ' (oldest first)'}
+          {snapshot.state.isActive && (
+            <span className="ml-2 text-accent font-medium">
+              • Capturing: {snapshot.state.messageCount} new
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Snapshot Button */}
+          <SnapshotButton
+            isActive={snapshot.state.isActive}
+            onStart={snapshot.startSnapshot}
+            onStop={handleSnapshotStop}
+            onPastSnapshot={handleSnapshotPast}
+          />
+
           {/* Sort Order Toggle */}
           <button
             type="button"
@@ -426,6 +468,17 @@ function ChannelLogsPage() {
       {/* Logs */}
       {!isLoading && !error && messages && (
         <LogList messages={sortedMessages} channelName={channel} />
+      )}
+
+      {/* Snapshot Output Modal */}
+      {showSnapshotOutput && snapshot.state.messages.length > 0 && (
+        <SnapshotOutput
+          messages={snapshot.state.messages}
+          config={snapshot.state.config}
+          onConfigChange={snapshot.updateConfig}
+          onClose={handleCloseSnapshotOutput}
+          emoteMap={emoteMap}
+        />
       )}
     </div>
   )
