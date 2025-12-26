@@ -2,34 +2,46 @@ import { Check, Copy, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { FullMessage } from '@/api/model'
 import type { SnapshotConfig } from '@/hooks/useSnapshot'
+import { type EmoteMap, parseMessageWithEmotes } from '@/hooks/useChannelEmotes'
 
 export interface SnapshotOutputProps {
   messages: FullMessage[]
   config: SnapshotConfig
   onConfigChange: (config: Partial<SnapshotConfig>) => void
   onClose: () => void
+  emoteMap?: EmoteMap
 }
 
-// Helper function to check if message contains only emotes
-function isEmoteOnlyMessage(text: string): boolean {
+// Helper function to check if message contains only emotes using actual emote data
+function isEmoteOnlyMessage(text: string, emoteMap?: EmoteMap): boolean {
   if (!text || text.trim().length === 0) return true
+  if (!emoteMap || emoteMap.size === 0) return false // Can't detect without emote data
 
-  // Common emote patterns - words that are typically emotes
-  // This is a simple heuristic; a more sophisticated approach would use the emote data
-  const words = text.trim().split(/\s+/)
+  // Clean the text by removing invisible/control characters and other Unicode garbage
+  // This handles cases like "BANGER 󠀀" or "UncPls  ͏" where there are invisible/weird Unicode chars
+  const cleanedText = text
+    .replace(
+      /[\u0000-\u001F\u007F-\u009F\u200B-\u200D\uFEFF\u{E0000}-\u{E007F}\u034F\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE00-\uFE0F\u{E0100}-\u{E01EF}]/gu,
+      ''
+    )
+    .trim()
 
-  // If every word starts with an uppercase letter or common emote pattern, consider it emote-only
-  // This is not perfect but works for most cases
-  const emotePattern = /^[A-Z][a-zA-Z0-9]*$/
-  const allLikelyEmotes = words.every((word) => emotePattern.test(word))
+  if (cleanedText.length === 0) return true
 
-  // Also check if it's very short (typical emote spam)
-  const isShort = words.length <= 5 && text.length <= 50
+  // Split into words
+  const words = cleanedText.split(/\s+/).filter((w) => w.length > 0)
 
-  return allLikelyEmotes && isShort
+  // Check if every word is in the emote map
+  return words.every((word) => emoteMap.has(word))
 }
 
-export function SnapshotOutput({ messages, config, onConfigChange, onClose }: SnapshotOutputProps) {
+export function SnapshotOutput({
+  messages,
+  config,
+  onConfigChange,
+  onClose,
+  emoteMap,
+}: SnapshotOutputProps) {
   const [copied, setCopied] = useState(false)
 
   // Filter and format messages based on config
@@ -45,7 +57,9 @@ export function SnapshotOutput({ messages, config, onConfigChange, onClose }: Sn
 
     // Filter emote-only messages
     if (config.removeEmoteOnly) {
-      filteredMessages = filteredMessages.filter((msg) => !isEmoteOnlyMessage(msg.text || ''))
+      filteredMessages = filteredMessages.filter(
+        (msg) => !isEmoteOnlyMessage(msg.text || '', emoteMap)
+      )
     }
 
     // Format messages
@@ -73,7 +87,7 @@ export function SnapshotOutput({ messages, config, onConfigChange, onClose }: Sn
         return parts.join(' ')
       })
       .join('\n')
-  }, [messages, config])
+  }, [messages, config, emoteMap])
 
   const handleCopy = async () => {
     try {
@@ -94,14 +108,14 @@ export function SnapshotOutput({ messages, config, onConfigChange, onClose }: Sn
 
     if (config.removeEmoteOnly) {
       count = messages
-        .filter((msg) => !isEmoteOnlyMessage(msg.text || ''))
+        .filter((msg) => !isEmoteOnlyMessage(msg.text || '', emoteMap))
         .filter(
           (msg) => !config.minCharacters || (msg.text || '').length >= config.minCharacters
         ).length
     }
 
     return count
-  }, [messages, config])
+  }, [messages, config, emoteMap])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

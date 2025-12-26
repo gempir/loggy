@@ -19,7 +19,9 @@ import { LogList } from '@/components/LogList'
 import { SnapshotButton } from '@/components/SnapshotButton'
 import { SnapshotOutput } from '@/components/SnapshotOutput'
 import { useApiConfig } from '@/hooks/useApiConfig'
+import { extractChannelId, useChannelEmotes } from '@/hooks/useChannelEmotes'
 import { useFavorites } from '@/hooks/useFavorites'
+import { use7tvEmotesEnabled } from '@/hooks/useSettings'
 import { useSnapshot } from '@/hooks/useSnapshot'
 
 type AutoRefreshInterval = 0 | 5 | 10 | 30 | 60
@@ -153,6 +155,11 @@ function ChannelLogsPage() {
     }
     return messages
   }, [messages, sortNewestFirst])
+
+  // Fetch 7TV emotes for emote detection in snapshot
+  const { enabled: sevenTvEnabled } = use7tvEmotesEnabled()
+  const channelId = useMemo(() => extractChannelId(sortedMessages), [sortedMessages])
+  const { data: emoteMap } = useChannelEmotes(sevenTvEnabled ? channelId : null)
 
   // Snapshot functionality
   const snapshot = useSnapshot(sortedMessages, refetch)
@@ -470,6 +477,7 @@ function ChannelLogsPage() {
           config={snapshot.state.config}
           onConfigChange={snapshot.updateConfig}
           onClose={handleCloseSnapshotOutput}
+          emoteMap={emoteMap}
         />
       )}
     </div>
