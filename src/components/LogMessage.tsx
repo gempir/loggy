@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import type { FullMessage } from '@/api/model'
 import { type EmoteMap, parseMessageWithEmotes } from '@/hooks/useChannelEmotes'
+import { parseTextWithLinks } from '@/lib/parseLinks'
 import { Emote } from './Emote'
 
 interface LogMessageProps {
@@ -68,15 +69,38 @@ export function LogMessage({
         {message.displayName || message.username}:
       </Link>
 
-      {/* Message text with emotes */}
+      {/* Message text with emotes and links */}
       <span className="text-text-primary break-words chat-message-text">
-        {messageParts.map((part) =>
-          part.type === 'emote' && part.emote ? (
-            <Emote key={`emote-${part.startIndex}-${part.emote.id}`} emote={part.emote} />
-          ) : (
-            <span key={`text-${part.startIndex}`}>{part.content}</span>
+        {messageParts.map((part) => {
+          if (part.type === 'emote' && part.emote) {
+            return <Emote key={`emote-${part.startIndex}-${part.emote.id}`} emote={part.emote} />
+          }
+
+          // Parse text parts for links
+          const textSegments = parseTextWithLinks(part.content)
+          return (
+            <span key={`text-${part.startIndex}`}>
+              {textSegments.map((segment, segmentIndex) => {
+                if (segment.type === 'link' && segment.href) {
+                  return (
+                    <a
+                      key={`link-${part.startIndex}-${segmentIndex}`}
+                      href={segment.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline"
+                    >
+                      {segment.content}
+                    </a>
+                  )
+                }
+                return (
+                  <span key={`segment-${part.startIndex}-${segmentIndex}`}>{segment.content}</span>
+                )
+              })}
+            </span>
           )
-        )}
+        })}
       </span>
     </div>
   )

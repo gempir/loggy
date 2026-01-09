@@ -1,8 +1,8 @@
 import { Check, Copy, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { FullMessage } from '@/api/model'
-import type { SnapshotConfig } from '@/hooks/useSnapshot'
 import type { EmoteMap } from '@/hooks/useChannelEmotes'
+import type { SnapshotConfig } from '@/hooks/useSnapshot'
 
 export interface SnapshotOutputProps {
   messages: FullMessage[]
