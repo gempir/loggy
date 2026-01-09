@@ -23,14 +23,14 @@ describe('parseTextWithLinks', () => {
     expect(result[2]).toEqual({ type: 'text', content: ' for more info' })
   })
 
-  it('should detect URLs with http protocol', () => {
+  it('should detect URLs with http protocol and normalize to https', () => {
     const result = parseTextWithLinks('Visit http://test.org now')
     expect(result).toHaveLength(3)
     expect(result[0]).toEqual({ type: 'text', content: 'Visit ' })
     expect(result[1]).toEqual({
       type: 'link',
       content: 'http://test.org',
-      href: 'http://test.org',
+      href: 'https://test.org',
     })
     expect(result[2]).toEqual({ type: 'text', content: ' now' })
   })
@@ -118,5 +118,17 @@ describe('parseTextWithLinks', () => {
       content: 'https://example.com/docs#section-1',
       href: 'https://example.com/docs#section-1',
     })
+  })
+
+  it('should handle URLs without protocol like test.ai', () => {
+    const result = parseTextWithLinks('Check out test.ai for more info')
+    expect(result).toHaveLength(3)
+    expect(result[0]).toEqual({ type: 'text', content: 'Check out ' })
+    expect(result[1]).toEqual({
+      type: 'link',
+      content: 'test.ai',
+      href: 'https://test.ai',
+    })
+    expect(result[2]).toEqual({ type: 'text', content: ' for more info' })
   })
 })

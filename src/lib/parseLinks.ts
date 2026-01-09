@@ -1,3 +1,5 @@
+import LinkifyIt from 'linkify-it'
+
 export interface TextSegment {
   type: 'text' | 'link'
   content: string
@@ -7,40 +9,43 @@ export interface TextSegment {
 /**
  * Parse text and split it into text and link segments
  * Links will be made clickable with target="_blank"
+ * Uses linkify-it library to detect URLs including those without protocols
  */
 export function parseTextWithLinks(text: string): TextSegment[] {
   const segments: TextSegment[] = []
+
+  // Initialize linkify-it
+  const linkify = new LinkifyIt()
+
+  // Find all links in the text
+  const matches = linkify.match(text)
+
+  if (!matches || matches.length === 0) {
+    return [{ type: 'text', content: text }]
+  }
+
   let lastIndex = 0
 
-  // Create a new regex instance to avoid state issues
-  const urlRegex =
-    /(?:https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)/gi
-
-  let match = urlRegex.exec(text)
-  while (match !== null) {
-    const matchedText = match[0]
-    const matchIndex = match.index
-
+  for (const match of matches) {
     // Add any text before this match
-    if (matchIndex > lastIndex) {
+    if (match.index > lastIndex) {
       segments.push({
         type: 'text',
-        content: text.slice(lastIndex, matchIndex),
+        content: text.slice(lastIndex, match.index),
       })
     }
 
     // Add the URL segment
-    // If the URL doesn't start with a protocol, add https://
-    const href = matchedText.match(/^https?:\/\//i) ? matchedText : `https://${matchedText}`
+    // Normalize http:// to https:// for security
+    const href = match.url.replace(/^http:\/\//, 'https://')
 
     segments.push({
       type: 'link',
-      content: matchedText,
+      content: match.text,
       href,
     })
 
-    lastIndex = matchIndex + matchedText.length
-    match = urlRegex.exec(text)
+    lastIndex = match.lastIndex
   }
 
   // Add any remaining text after the last match
@@ -48,14 +53,6 @@ export function parseTextWithLinks(text: string): TextSegment[] {
     segments.push({
       type: 'text',
       content: text.slice(lastIndex),
-    })
-  }
-
-  // If no matches were found, return the entire text as one segment
-  if (segments.length === 0) {
-    segments.push({
-      type: 'text',
-      content: text,
     })
   }
 

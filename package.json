@@ -24,6 +24,7 @@
     "@tanstack/react-virtual": "^3.13.13",
     "@tanstack/router-plugin": "^1.132.0",
     "@tanstack/zod-adapter": "^1.143.6",
+    "linkify-it": "^5.0.0",
     "lucide-react": "^0.561.0",
     "nitro": "latest",
     "orval": "^7.17.2",
