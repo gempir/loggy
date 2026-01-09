@@ -1,7 +1,3 @@
-// URL detection regex that matches http, https, and common TLDs without protocol
-const URL_REGEX =
-  /(?:https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)/gi
-
 export interface TextSegment {
   type: 'text' | 'link'
   content: string
@@ -16,10 +12,11 @@ export function parseTextWithLinks(text: string): TextSegment[] {
   const segments: TextSegment[] = []
   let lastIndex = 0
 
-  // Reset regex state
-  URL_REGEX.lastIndex = 0
+  // Create a new regex instance to avoid state issues
+  const urlRegex =
+    /(?:https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)/gi
 
-  let match = URL_REGEX.exec(text)
+  let match = urlRegex.exec(text)
   while (match !== null) {
     const matchedText = match[0]
     const matchIndex = match.index
@@ -43,10 +40,10 @@ export function parseTextWithLinks(text: string): TextSegment[] {
     })
 
     lastIndex = matchIndex + matchedText.length
-    match = URL_REGEX.exec(text)
+    match = urlRegex.exec(text)
   }
 
-  // Add any remaining text
+  // Add any remaining text after the last match
   if (lastIndex < text.length) {
     segments.push({
       type: 'text',
@@ -54,7 +51,7 @@ export function parseTextWithLinks(text: string): TextSegment[] {
     })
   }
 
-  // If no URLs were found, return the original text as a single segment
+  // If no matches were found, return the entire text as one segment
   if (segments.length === 0) {
     segments.push({
       type: 'text',
