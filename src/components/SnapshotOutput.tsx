@@ -1,8 +1,8 @@
 import { Check, Copy, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { FullMessage } from '@/api/model'
-import type { SnapshotConfig } from '@/hooks/useSnapshot'
 import type { EmoteMap } from '@/hooks/useChannelEmotes'
+import type { SnapshotConfig } from '@/hooks/useSnapshot'
 
 export interface SnapshotOutputProps {
   messages: FullMessage[]
@@ -153,6 +153,7 @@ export function SnapshotOutput({
                 type="checkbox"
                 checked={config.removeEmoteOnly}
                 onChange={(e) => onConfigChange({ removeEmoteOnly: e.target.checked })}
+                autoComplete="off"
                 className="w-4 h-4 rounded accent-accent"
               />
               <span className="text-sm text-text-primary">Remove emote-only</span>
@@ -164,6 +165,7 @@ export function SnapshotOutput({
                 type="checkbox"
                 checked={config.showTimestamps}
                 onChange={(e) => onConfigChange({ showTimestamps: e.target.checked })}
+                autoComplete="off"
                 className="w-4 h-4 rounded accent-accent"
               />
               <span className="text-sm text-text-primary">Show timestamps</span>
@@ -175,6 +177,7 @@ export function SnapshotOutput({
                 type="checkbox"
                 checked={config.showUsernames}
                 onChange={(e) => onConfigChange({ showUsernames: e.target.checked })}
+                autoComplete="off"
                 className="w-4 h-4 rounded accent-accent"
               />
               <span className="text-sm text-text-primary">Show usernames</span>
@@ -190,6 +193,7 @@ export function SnapshotOutput({
                 onChange={(e) =>
                   onConfigChange({ minCharacters: Math.max(0, parseInt(e.target.value, 10) || 0) })
                 }
+                autoComplete="off"
                 className="w-20 px-2 py-1 bg-bg-tertiary border border-border rounded text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
               />
             </label>
