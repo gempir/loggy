@@ -173,6 +173,10 @@ export function ApiSettings() {
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={defaultUrl}
+                    autoComplete="off"
+                    name="api-base-url"
+                    data-lpignore="true"
+                    data-form-type="other"
                     className="w-full px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 font-mono"
                   />
                 </div>

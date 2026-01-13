@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import {
   ArrowDownUp,
+  ArrowRight,
   BarChart3,
   ChevronLeft,
   ChevronRight,
@@ -10,6 +11,7 @@ import {
   Star,
   Timer,
   User,
+  X,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import type { FullMessage, JsonLogsResponse } from '@/api/model'
@@ -90,6 +92,7 @@ function ChannelLogsPage() {
   const router = useRouter()
   const { isFavorite, toggle } = useFavorites()
   const [userSearch, setUserSearch] = useState('')
+  const [messageSearch, setMessageSearch] = useState('')
   const [showAutoRefreshDropdown, setShowAutoRefreshDropdown] = useState(false)
   const [showSnapshotOutput, setShowSnapshotOutput] = useState(false)
 
@@ -156,13 +159,40 @@ function ChannelLogsPage() {
     return messages
   }, [messages, sortNewestFirst])
 
+  // Filter messages based on search query
+  const filteredMessages = useMemo(() => {
+    // If username search has text, filter by username
+    const usernameQuery = userSearch.trim().toLowerCase()
+
+    // If message search has text, filter by message text
+    const messageQuery = messageSearch.trim().toLowerCase()
+
+    // If no search, return all sorted messages
+    if (!usernameQuery && !messageQuery) {
+      return sortedMessages
+    }
+
+    return sortedMessages.filter((msg) => {
+      // Username filter (from username search field)
+      const matchesUsername =
+        !usernameQuery ||
+        msg.username.toLowerCase().includes(usernameQuery) ||
+        msg.displayName.toLowerCase().includes(usernameQuery)
+
+      // Message text filter (from message search field)
+      const matchesMessage = !messageQuery || msg.text.toLowerCase().includes(messageQuery)
+
+      return matchesUsername && matchesMessage
+    })
+  }, [sortedMessages, userSearch, messageSearch])
+
   // Fetch 7TV emotes for emote detection in snapshot
   const { enabled: sevenTvEnabled } = use7tvEmotesEnabled()
   const channelId = useMemo(() => extractChannelId(sortedMessages), [sortedMessages])
   const { data: emoteMap } = useChannelEmotes(sevenTvEnabled ? channelId : null)
 
   // Snapshot functionality
-  const snapshot = useSnapshot(sortedMessages, refetch)
+  const snapshot = useSnapshot(filteredMessages, refetch)
 
   const handleSnapshotStop = () => {
     snapshot.stopSnapshot()
@@ -296,6 +326,7 @@ function ChannelLogsPage() {
               type="date"
               value={`${selectedDate.year}-${selectedDate.month}-${selectedDate.day}`}
               onChange={(e) => updateDate(e.target.value)}
+              autoComplete="off"
               className="px-2 py-1 bg-transparent border-none text-sm focus:outline-none"
             />
 
@@ -321,7 +352,7 @@ function ChannelLogsPage() {
           </Link>
 
           {/* User Search */}
-          <form onSubmit={handleUserSearch} className="flex items-stretch gap-1">
+          <form onSubmit={handleUserSearch} className="flex items-stretch" autoComplete="off">
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
@@ -331,25 +362,78 @@ function ChannelLogsPage() {
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
                 autoComplete="off"
-                className="w-28 sm:w-36 pl-9 pr-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 placeholder:text-text-muted"
+                name="user-search-field"
+                data-lpignore="true"
+                data-form-type="other"
+                className="w-28 sm:w-36 pl-9 pr-3 py-2 bg-bg-tertiary border border-border rounded-l-lg border-r-0 text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 placeholder:text-text-muted"
               />
             </div>
             <button
               type="submit"
               disabled={!userSearch.trim()}
-              className="flex items-center justify-center px-3 py-2 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
-              aria-label="Search user"
+              className="flex items-center justify-center px-3 py-2 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-r-lg text-sm transition-colors border border-accent"
+              aria-label="Go to user"
+              title="Go to user logs"
             >
-              <Search className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </form>
+
+          {/* Message Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+            <input
+              type="text"
+              placeholder="Search messages..."
+              aria-label="Search messages"
+              value={messageSearch}
+              onChange={(e) => setMessageSearch(e.target.value)}
+              autoComplete="off"
+              name="message-search-field"
+              data-lpignore="true"
+              data-form-type="other"
+              className="w-56 sm:w-72 pl-9 pr-8 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 placeholder:text-text-muted"
+            />
+            {messageSearch && (
+              <button
+                type="button"
+                onClick={() => setMessageSearch('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-bg-hover rounded transition-colors"
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5 text-text-muted hover:text-text-primary" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Message Count and Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
         <div className="text-text-secondary text-sm">
-          {messages ? `${messages.length.toLocaleString()} messages` : ''}
+          {messages ? (
+            userSearch.trim() || messageSearch.trim() ? (
+              <>
+                <span className="text-accent font-medium">
+                  {filteredMessages.length.toLocaleString()}
+                </span>
+                {' of '}
+                {messages.length.toLocaleString()} messages
+                {(userSearch.trim() || messageSearch.trim()) && (
+                  <span className="ml-1">
+                    {userSearch.trim() && !messageSearch.trim() && '(username filter)'}
+                    {!userSearch.trim() && messageSearch.trim() && '(message filter)'}
+                    {userSearch.trim() && messageSearch.trim() && '(combined filters)'}
+                  </span>
+                )}
+              </>
+            ) : (
+              `${messages.length.toLocaleString()} messages`
+            )
+          ) : (
+            ''
+          )}
           {sortNewestFirst ? ' (newest first)' : ' (oldest first)'}
           {snapshot.state.isActive && (
             <span className="ml-2 text-accent font-medium">
@@ -467,7 +551,7 @@ function ChannelLogsPage() {
 
       {/* Logs */}
       {!isLoading && !error && messages && (
-        <LogList messages={sortedMessages} channelName={channel} />
+        <LogList messages={filteredMessages} channelName={channel} />
       )}
 
       {/* Snapshot Output Modal */}

@@ -165,7 +165,7 @@ function HomePage() {
     <div className="px-2 h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
       {/* Search Section - Always visible and usable */}
       <div className="mt-2 mb-2 max-w-xl mx-auto shrink-0">
-        <form onSubmit={handleSearch} onKeyDown={handleFormKeyDown}>
+        <form onSubmit={handleSearch} onKeyDown={handleFormKeyDown} autoComplete="off">
           <div className="flex gap-2">
             {/* Channel Input with Autocomplete */}
             <div className="relative flex-1" ref={dropdownRef}>
@@ -179,6 +179,10 @@ function HomePage() {
                 onChange={(e) => handleChannelInputChange(e.target.value)}
                 onFocus={() => setShowDropdown(true)}
                 onKeyDown={handleKeyDown}
+                autoComplete="off"
+                name="channel-search-field"
+                data-lpignore="true"
+                data-form-type="other"
                 className={`w-full pl-11 pr-4 py-3 bg-bg-secondary border rounded-lg focus:outline-none focus:ring-2 placeholder:text-text-muted ${
                   channelError
                     ? 'border-error focus:border-error focus:ring-error/20'
@@ -222,6 +226,10 @@ function HomePage() {
                 aria-label="Username"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
+                autoComplete="off"
+                name="username-optional-field"
+                data-lpignore="true"
+                data-form-type="other"
                 className="w-full pl-11 pr-4 py-3 bg-bg-secondary border border-border rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 placeholder:text-text-muted"
               />
             </div>

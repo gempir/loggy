@@ -227,6 +227,7 @@ function UserLogsPage() {
                   },
                 })
               }}
+              autoComplete="off"
               className="px-2 py-1 bg-transparent border-none text-sm focus:outline-none"
             />
 

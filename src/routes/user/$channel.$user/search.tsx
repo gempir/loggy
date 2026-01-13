@@ -112,7 +112,7 @@ function UserSearchPage() {
       </div>
 
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="mb-2 shrink-0">
+      <form onSubmit={handleSearch} className="mb-2 shrink-0" autoComplete="off">
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
@@ -121,6 +121,10 @@ function UserSearchPage() {
               placeholder="Search messages..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
+              autoComplete="off"
+              name="user-message-search"
+              data-lpignore="true"
+              data-form-type="other"
               className="w-full pl-12 pr-4 py-3 bg-bg-secondary border border-border rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 placeholder:text-text-muted"
             />
           </div>
