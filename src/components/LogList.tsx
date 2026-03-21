@@ -29,7 +29,7 @@ export function LogList({ messages, channelName, showChannel = false }: LogListP
   const virtualizer = useVirtualizer({
     count: messages.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 28, // Initial estimate, will be measured dynamically
+    estimateSize: () => 22, // Initial estimate, will be measured dynamically
     overscan: 10,
   })
 

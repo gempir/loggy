@@ -32,7 +32,7 @@ export function LogMessage({
   const messageParts = parseMessageWithEmotes(message.text || '', emoteMap || new Map())
 
   return (
-    <div className="group py-1 px-2 hover:bg-bg-tertiary/50 rounded leading-relaxed break-words">
+    <div className="group py-0.5 px-2 hover:bg-bg-tertiary/50 rounded leading-tight break-words">
       {/* Timestamp */}
       {timestampDisplay !== 'none' && (
         <span
