@@ -3,6 +3,8 @@ import { useMemo, useState } from 'react'
 import type { FullMessage } from '@/api/model'
 import type { EmoteMap } from '@/hooks/useChannelEmotes'
 import type { SnapshotConfig } from '@/hooks/useSnapshot'
+import { TIMESTAMP_DISPLAY_OPTIONS } from '@/lib/settings'
+import { formatTimestamp } from '@/lib/timestamp'
 
 export interface SnapshotOutputProps {
   messages: FullMessage[]
@@ -73,14 +75,9 @@ export function SnapshotOutput({
       .map((msg) => {
         const parts: string[] = []
 
-        if (config.showTimestamps) {
+        if (config.timestampDisplay !== 'none') {
           const timestamp = new Date(msg.timestamp)
-          const time = timestamp.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-          })
+          const time = formatTimestamp(timestamp, config.timestampDisplay)
           parts.push(`[${time}]`)
         }
 
@@ -159,16 +156,24 @@ export function SnapshotOutput({
               <span className="text-sm text-text-primary">Remove emote-only</span>
             </label>
 
-            {/* Show timestamps */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={config.showTimestamps}
-                onChange={(e) => onConfigChange({ showTimestamps: e.target.checked })}
-                autoComplete="off"
-                className="w-4 h-4 rounded accent-accent"
-              />
-              <span className="text-sm text-text-primary">Show timestamps</span>
+            {/* Timestamp display */}
+            <label className="flex items-center gap-2">
+              <span className="text-sm text-text-primary whitespace-nowrap">Timestamps:</span>
+              <select
+                value={config.timestampDisplay}
+                onChange={(e) =>
+                  onConfigChange({
+                    timestampDisplay: e.target.value as SnapshotConfig['timestampDisplay'],
+                  })
+                }
+                className="px-2 py-1 bg-bg-tertiary border border-border rounded text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
+              >
+                {TIMESTAMP_DISPLAY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </label>
 
             {/* Show usernames */}

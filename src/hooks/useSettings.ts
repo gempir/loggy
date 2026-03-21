@@ -2,12 +2,15 @@ import { useCallback, useSyncExternalStore } from 'react'
 import {
   type FontFamily,
   type FontSize,
+  type TimestampDisplay,
   get7tvEmotesEnabled,
   getFontFamily,
   getFontSize,
+  getTimestampDisplay,
   set7tvEmotesEnabled,
   setFontFamily,
   setFontSize,
+  setTimestampDisplay,
 } from '@/lib/settings'
 
 const subscribers = new Set<() => void>()
@@ -45,6 +48,14 @@ function getFontSizeSnapshot(): FontSize {
 
 function getFontSizeServerSnapshot(): FontSize {
   return 'base' // Default font size on server
+}
+
+function getTimestampDisplaySnapshot(): TimestampDisplay {
+  return getTimestampDisplay()
+}
+
+function getTimestampDisplayServerSnapshot(): TimestampDisplay {
+  return 'hours-minutes-seconds' // Default timestamp display on server
 }
 
 export function use7tvEmotesEnabled() {
@@ -93,5 +104,23 @@ export function useFontSize() {
   return {
     size,
     setSize,
+  }
+}
+
+export function useTimestampDisplay() {
+  const display = useSyncExternalStore(
+    subscribe,
+    getTimestampDisplaySnapshot,
+    getTimestampDisplayServerSnapshot
+  )
+
+  const setDisplay = useCallback((value: TimestampDisplay) => {
+    setTimestampDisplay(value)
+    notifySubscribers()
+  }, [])
+
+  return {
+    display,
+    setDisplay,
   }
 }

@@ -85,7 +85,7 @@ export function Emote({ emote }: EmoteProps) {
       ref={emoteRef}
       role="img"
       aria-label={emote.name}
-      className="relative inline-block align-middle mx-px cursor-pointer"
+      className="relative inline-block leading-none align-middle mx-px cursor-pointer"
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
@@ -96,7 +96,7 @@ export function Emote({ emote }: EmoteProps) {
         <img
           src={emote.url}
           alt={emote.name}
-          className="inline-block align-middle h-[1.75em] w-auto"
+          className="block h-[0.9em] w-auto"
           loading="lazy"
         />
       </picture>

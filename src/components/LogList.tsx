@@ -3,27 +3,22 @@ import { ArrowUp } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FullMessage } from '@/api/model'
 import { extractChannelId, useChannelEmotes } from '@/hooks/useChannelEmotes'
-import { use7tvEmotesEnabled } from '@/hooks/useSettings'
+import { use7tvEmotesEnabled, useTimestampDisplay } from '@/hooks/useSettings'
 import { LogMessage } from './LogMessage'
 
 interface LogListProps {
   messages: FullMessage[]
   channelName: string
   showChannel?: boolean
-  showDate?: boolean
 }
 
-export function LogList({
-  messages,
-  channelName,
-  showChannel = false,
-  showDate = false,
-}: LogListProps) {
+export function LogList({ messages, channelName, showChannel = false }: LogListProps) {
   const parentRef = useRef<HTMLDivElement>(null)
   const [showScrollTop, setShowScrollTop] = useState(false)
 
   // Check if 7TV emotes are enabled in settings
   const { enabled: sevenTvEnabled } = use7tvEmotesEnabled()
+  const { display: timestampDisplay } = useTimestampDisplay()
 
   // Extract the Twitch channel ID from messages
   const channelId = useMemo(() => extractChannelId(messages), [messages])
@@ -34,7 +29,7 @@ export function LogList({
   const virtualizer = useVirtualizer({
     count: messages.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 28, // Initial estimate, will be measured dynamically
+    estimateSize: () => 22, // Initial estimate, will be measured dynamically
     overscan: 10,
   })
 
@@ -89,7 +84,7 @@ export function LogList({
                   message={message}
                   channelName={channelName}
                   showChannel={showChannel}
-                  showDate={showDate}
+                  timestampDisplay={timestampDisplay}
                   emoteMap={emoteMap}
                 />
               </div>

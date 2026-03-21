@@ -2,13 +2,15 @@ import { Link } from '@tanstack/react-router'
 import type { FullMessage } from '@/api/model'
 import { type EmoteMap, parseMessageWithEmotes } from '@/hooks/useChannelEmotes'
 import { parseTextWithLinks } from '@/lib/parseLinks'
+import type { TimestampDisplay } from '@/lib/settings'
+import { formatTimestamp } from '@/lib/timestamp'
 import { Emote } from './Emote'
 
 interface LogMessageProps {
   message: FullMessage
   channelName: string
   showChannel?: boolean
-  showDate?: boolean
+  timestampDisplay: TimestampDisplay
   emoteMap?: EmoteMap
 }
 
@@ -16,21 +18,12 @@ export function LogMessage({
   message,
   channelName,
   showChannel = false,
-  showDate = false,
+  timestampDisplay,
   emoteMap,
 }: LogMessageProps) {
   const timestamp = new Date(message.timestamp)
-  const formattedTime = timestamp.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  })
-  const formattedDate = timestamp.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+  const formattedTimestamp = formatTimestamp(timestamp, timestampDisplay)
+  const fullTimestamp = formatTimestamp(timestamp, 'full')
 
   // Get user color from tags if available
   const userColor = message.tags?.color || '#9147ff'
@@ -39,21 +32,23 @@ export function LogMessage({
   const messageParts = parseMessageWithEmotes(message.text || '', emoteMap || new Map())
 
   return (
-    <div className="group flex gap-2 py-1 px-2 hover:bg-bg-tertiary/50 rounded leading-relaxed">
+    <div className="group py-0.5 px-2 hover:bg-bg-tertiary/50 rounded leading-tight break-words">
       {/* Timestamp */}
-      <span
-        className="text-text-muted shrink-0 tabular-nums font-mono chat-message-text"
-        title={`${formattedDate} ${formattedTime}`}
-      >
-        {showDate ? `${formattedDate} ${formattedTime}` : formattedTime}
-      </span>
+      {timestampDisplay !== 'none' && (
+        <span
+          className="text-text-muted tabular-nums font-mono chat-message-text mr-2"
+          title={fullTimestamp}
+        >
+          {formattedTimestamp}
+        </span>
+      )}
 
       {/* Channel (optional) */}
       {showChannel && (
         <Link
           to="/channel/$channel"
           params={{ channel: message.channel }}
-          className="text-text-secondary hover:text-accent shrink-0 chat-message-text"
+          className="text-text-secondary hover:text-accent chat-message-text mr-2"
         >
           #{message.channel}
         </Link>
@@ -63,14 +58,14 @@ export function LogMessage({
       <Link
         to="/user/$channel/$user"
         params={{ channel: channelName, user: message.username }}
-        className="shrink-0 font-medium hover:underline chat-message-text"
+        className="font-medium hover:underline chat-message-text mr-2"
         style={{ color: userColor }}
       >
         {message.displayName || message.username}:
       </Link>
 
       {/* Message text with emotes and links */}
-      <span className="text-text-primary break-words chat-message-text">
+      <span className="text-text-primary chat-message-text">
         {messageParts.map((part) => {
           if (part.type === 'emote' && part.emote) {
             return <Emote key={`emote-${part.startIndex}-${part.emote.id}`} emote={part.emote} />
