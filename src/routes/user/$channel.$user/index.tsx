@@ -76,6 +76,7 @@ function UserLogsPage() {
   const { apiBaseUrl } = useApiConfig()
   const { isFavorite, toggle } = useFavorites()
   const [showAutoRefreshDropdown, setShowAutoRefreshDropdown] = useState(false)
+  const [messageFilter, setMessageFilter] = useState('')
 
   const isUserFavorite = isFavorite('user', channel, user)
 
@@ -130,6 +131,15 @@ function UserLogsPage() {
     }
     return messages
   }, [messages, sortNewestFirst])
+
+  const filteredMessages = useMemo(() => {
+    const query = messageFilter.trim().toLowerCase()
+    if (!query) {
+      return sortedMessages
+    }
+
+    return sortedMessages.filter((msg) => msg.text.toLowerCase().includes(query))
+  }, [sortedMessages, messageFilter])
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     const date = new Date(
@@ -267,11 +277,38 @@ function UserLogsPage() {
       {/* Message Count and Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
         <div className="text-text-secondary text-sm">
-          {messages ? `${messages.length.toLocaleString()} messages` : ''}
+          {messages ? (
+            messageFilter.trim() ? (
+              <>
+                <span className="text-accent font-medium">
+                  {filteredMessages.length.toLocaleString()}
+                </span>
+                {' of '}
+                {messages.length.toLocaleString()} messages
+              </>
+            ) : (
+              `${messages.length.toLocaleString()} messages`
+            )
+          ) : (
+            ''
+          )}
           {sortNewestFirst ? ' (newest first)' : ' (oldest first)'}
         </div>
 
         <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Filter messages..."
+            aria-label="Filter messages"
+            value={messageFilter}
+            onChange={(e) => setMessageFilter(e.target.value)}
+            autoComplete="off"
+            name="message-filter-field"
+            data-lpignore="true"
+            data-form-type="other"
+            className="w-36 sm:w-44 px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 placeholder:text-text-muted"
+          />
+
           {/* Sort Order Toggle */}
           <button
             type="button"
@@ -388,7 +425,7 @@ function UserLogsPage() {
 
       {/* Logs */}
       {!isLoading && !error && messages && (
-        <LogList messages={sortedMessages} channelName={channel} />
+        <LogList messages={filteredMessages} channelName={channel} />
       )}
     </div>
   )

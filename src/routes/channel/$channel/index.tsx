@@ -93,6 +93,7 @@ function ChannelLogsPage() {
   const { isFavorite, toggle } = useFavorites()
   const [userSearch, setUserSearch] = useState('')
   const [messageSearch, setMessageSearch] = useState('')
+  const [messageFilter, setMessageFilter] = useState('')
   const [showAutoRefreshDropdown, setShowAutoRefreshDropdown] = useState(false)
   const [showSnapshotOutput, setShowSnapshotOutput] = useState(false)
 
@@ -186,13 +187,22 @@ function ChannelLogsPage() {
     })
   }, [sortedMessages, userSearch, messageSearch])
 
+  const viewMessages = useMemo(() => {
+    const query = messageFilter.trim().toLowerCase()
+    if (!query) {
+      return filteredMessages
+    }
+
+    return filteredMessages.filter((msg) => msg.text.toLowerCase().includes(query))
+  }, [filteredMessages, messageFilter])
+
   // Fetch 7TV emotes for emote detection in snapshot
   const { enabled: sevenTvEnabled } = use7tvEmotesEnabled()
   const channelId = useMemo(() => extractChannelId(sortedMessages), [sortedMessages])
   const { data: emoteMap } = useChannelEmotes(sevenTvEnabled ? channelId : null)
 
   // Snapshot functionality
-  const snapshot = useSnapshot(filteredMessages, refetch)
+  const snapshot = useSnapshot(viewMessages, refetch)
 
   const handleSnapshotStop = () => {
     snapshot.stopSnapshot()
@@ -413,18 +423,23 @@ function ChannelLogsPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
         <div className="text-text-secondary text-sm">
           {messages ? (
-            userSearch.trim() || messageSearch.trim() ? (
+            userSearch.trim() || messageSearch.trim() || messageFilter.trim() ? (
               <>
                 <span className="text-accent font-medium">
-                  {filteredMessages.length.toLocaleString()}
+                  {viewMessages.length.toLocaleString()}
                 </span>
                 {' of '}
                 {messages.length.toLocaleString()} messages
-                {(userSearch.trim() || messageSearch.trim()) && (
+                {(userSearch.trim() || messageSearch.trim() || messageFilter.trim()) && (
                   <span className="ml-1">
-                    {userSearch.trim() && !messageSearch.trim() && '(username filter)'}
-                    {!userSearch.trim() && messageSearch.trim() && '(message filter)'}
-                    {userSearch.trim() && messageSearch.trim() && '(combined filters)'}
+                    {(userSearch.trim() || messageSearch.trim()) && !messageFilter.trim() && (
+                      <>
+                        {userSearch.trim() && !messageSearch.trim() && '(username filter)'}
+                        {!userSearch.trim() && messageSearch.trim() && '(message filter)'}
+                        {userSearch.trim() && messageSearch.trim() && '(combined filters)'}
+                      </>
+                    )}
+                    {messageFilter.trim() && '(view filter)'}
                   </span>
                 )}
               </>
@@ -449,6 +464,19 @@ function ChannelLogsPage() {
             onStart={snapshot.startSnapshot}
             onStop={handleSnapshotStop}
             onPastSnapshot={handleSnapshotPast}
+          />
+
+          <input
+            type="text"
+            placeholder="Filter messages..."
+            aria-label="Filter messages"
+            value={messageFilter}
+            onChange={(e) => setMessageFilter(e.target.value)}
+            autoComplete="off"
+            name="message-filter-field"
+            data-lpignore="true"
+            data-form-type="other"
+            className="w-36 sm:w-44 px-3 py-2 bg-bg-tertiary border border-border rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 placeholder:text-text-muted"
           />
 
           {/* Sort Order Toggle */}
@@ -551,7 +579,7 @@ function ChannelLogsPage() {
 
       {/* Logs */}
       {!isLoading && !error && messages && (
-        <LogList messages={filteredMessages} channelName={channel} />
+        <LogList messages={viewMessages} channelName={channel} />
       )}
 
       {/* Snapshot Output Modal */}
