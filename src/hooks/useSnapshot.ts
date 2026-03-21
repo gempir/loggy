@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FullMessage } from '@/api/model'
+import type { TimestampDisplay } from '@/lib/settings'
 
 export interface SnapshotConfig {
   removeEmoteOnly: boolean
-  showTimestamps: boolean
+  timestampDisplay: TimestampDisplay
   showUsernames: boolean
   minCharacters: number
 }
@@ -18,7 +19,7 @@ export interface SnapshotState {
 
 const DEFAULT_CONFIG: SnapshotConfig = {
   removeEmoteOnly: true,
-  showTimestamps: true,
+  timestampDisplay: 'hours-minutes-seconds',
   showUsernames: true,
   minCharacters: 0,
 }

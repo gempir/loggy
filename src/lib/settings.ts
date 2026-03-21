@@ -1,8 +1,10 @@
 const SEVENTV_EMOTES_KEY = 'loggy_7tv_emotes_enabled'
 const FONT_FAMILY_KEY = 'loggy_font_family'
 const FONT_SIZE_KEY = 'loggy_font_size'
+const TIMESTAMP_DISPLAY_KEY = 'loggy_timestamp_display'
 
 export type FontSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl'
+export type TimestampDisplay = 'full' | 'hours-minutes' | 'hours-minutes-seconds' | 'none'
 
 export const FONT_SIZE_OPTIONS: { value: FontSize; label: string; size: string }[] = [
   { value: 'xs', label: 'Extra Small', size: '0.75rem' },
@@ -10,6 +12,13 @@ export const FONT_SIZE_OPTIONS: { value: FontSize; label: string; size: string }
   { value: 'base', label: 'Medium', size: '1rem' },
   { value: 'lg', label: 'Large', size: '1.125rem' },
   { value: 'xl', label: 'Extra Large', size: '1.25rem' },
+]
+
+export const TIMESTAMP_DISPLAY_OPTIONS: { value: TimestampDisplay; label: string }[] = [
+  { value: 'hours-minutes-seconds', label: 'Hours:Minutes:Seconds' },
+  { value: 'hours-minutes', label: 'Hours:Minutes' },
+  { value: 'full', label: 'Full Timestamp' },
+  { value: 'none', label: 'No Timestamp' },
 ]
 
 export type FontFamily =
@@ -127,6 +136,21 @@ export function setFontSize(size: FontSize): void {
   if (sizeOption) {
     document.documentElement.style.setProperty('--font-size', sizeOption.size)
   }
+}
+
+export function getTimestampDisplay(): TimestampDisplay {
+  if (typeof window === 'undefined') {
+    return 'hours-minutes-seconds'
+  }
+  const stored = localStorage.getItem(TIMESTAMP_DISPLAY_KEY)
+  return (stored as TimestampDisplay) || 'hours-minutes-seconds'
+}
+
+export function setTimestampDisplay(display: TimestampDisplay): void {
+  if (typeof window === 'undefined') {
+    return
+  }
+  localStorage.setItem(TIMESTAMP_DISPLAY_KEY, display)
 }
 
 // Initialize font on load

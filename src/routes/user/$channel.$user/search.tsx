@@ -168,7 +168,7 @@ function UserSearchPage() {
 
           {/* Results */}
           {!isLoading && !error && messages && (
-            <LogList messages={messages} channelName={channel} showDate={true} />
+            <LogList messages={messages} channelName={channel} />
           )}
         </>
       )}
